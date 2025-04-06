@@ -3,9 +3,10 @@ import {
   EmployeeIdCell,
   EmployeeNameCell,
   DepartmentCell,
-  InputCell,
+  SalaryInputCell, // Changed from InputCell to SalaryInputCell
   TextCell,
-  CheckCell,
+  PfEsiInputCell, // New component for PF/ESI
+  TdsInputCell,   // New component for TDS
 } from "./rows";
 
 const columnHelper = createColumnHelper();
@@ -34,14 +35,14 @@ export const columns = [
   }),
   columnHelper.accessor("Salary", {
     header: "Salary",
-    cell: (props) => <InputCell {...props} field="Salary" />,
+    cell: SalaryInputCell,
   }),
   columnHelper.accessor("Pfon", {
     header: "PF & ESI",
-    cell: CheckCell,
+    cell: PfEsiInputCell, // Changed from CheckCell to PfEsiInputCell
   }),
-  columnHelper.accessor("Esion", {
-    header: "ABRY",
-    cell: CheckCell,
+  columnHelper.accessor("TDS", {
+    header: "TDS",
+    cell: TdsInputCell, // Changed from CheckCell to TdsInputCell
   }),
 ];

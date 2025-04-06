@@ -7,6 +7,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
 import { Box } from "components/ui";
+import { useAuthContext } from "app/contexts/auth/context";
 
 const items = [
   {
@@ -40,21 +41,25 @@ const items = [
 ];
 
 export default function Home() {
-  const navigate = useNavigate();  // React Router navigation hook
+  const navigate = useNavigate();
+  const { user } = useAuthContext();
+
+  const isAdmin = user?.username?.toLowerCase() === "sadmin";
+  const filteredItems = isAdmin ? items : items.slice(0, 2)
 
   return (
     <Page title="Homepage">
       <div className="flex min-w-0 align-middle justify-center py-2">
-          <h1 className="truncate text-4xl font-medium tracking-wide align-middle justify-center text-gray-800 dark:text-dark-50 px-2">
+        <h1 className="truncate text-4xl font-medium tracking-wide align-middle justify-center text-gray-800 dark:text-dark-50 px-2">
           Dashboard
-          </h1>
-        </div>
+        </h1>
+      </div>
       <div className="grid grid-cols-1 lg:px-16 lg:py-16 gap-4 sm:grid-cols-1 sm:gap-2 lg:grid-cols-2 lg:gap-4">
-        {items.map(({ id, Icon, title, description, navigateto }) => (
+        {filteredItems.map(({ id, Icon, title, description, navigateto }) => (
           <Box
             key={id}
             className="relative rounded-lg px-12 py-16 text-center mx-24 flex flex-col items-center justify-center cursor-pointer bg-gray-100 text-gray-800 shadow-lg dark:bg-dark-700 dark:text-dark-100 dark:shadow-none"
-            onClick={() => navigate(navigateto)}  // Navigate on click
+            onClick={() => navigate(navigateto)}
           >
             <Icon className="size-12 mb-2 text-primary-600 dark:text-primary-400" />
             <h4 className="text-lg font-semibold">{title}</h4>

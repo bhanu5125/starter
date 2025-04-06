@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import {
   flexRender,
   getCoreRowModel,
@@ -21,62 +22,142 @@ import { fuzzyFilter } from "utils/react-table/fuzzyFilter";
 import { Toolbar } from "./Toolbar";
 import { columns } from "./columns";
 import { PaginationSection } from "components/shared/table/PaginationSection";
-/*const monthNames = [
-  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-];*/
 
 export default function EmployeesDatatable() {
-  const [originalEmployees, setOriginalEmployees] = useState([]); // Store the original data
-  const [employees, setEmployees] = useState([]); // Store the filtered data
-  //const [error, setError] = useState(null);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get("http://localhost:5000/api/get-salary");
-        const data = response.data.map((staff) => ({
-          StaffId: staff.SId,
-          code: staff.Code,
-          firstname: staff.FirstName,
-          surname: staff.LastName,
-          department_name: staff.DeptName,
-          Salary: staff.Salary || 0, // Default to 0 if undefined
-          Pfon: staff.Pfon || 0, // Default to 0 if undefined
-          Esion: staff.Esion || 0, // Default to 0 if undefined
-          Year: staff.Year,
-          Month: staff.Month,
-        }));
-        console.log(data);
-        setOriginalEmployees(data);
-        setEmployees(data);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-    fetchData();
-  }, []);  
-
+  const [originalEmployees, setOriginalEmployees] = useState([]);
+  const [employees, setEmployees] = useState([]);
+  const [updatedEmployees, setUpdatedEmployees] = useState([]);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState(null);
   const [tableSettings, setTableSettings] = useState({
     enableFullScreen: false,
     enableRowDense: false,
     enableSorting: true,
     enableColumnFilters: true,
   });
-
   const [globalFilter, setGlobalFilter] = useState("");
   const [sorting, setSorting] = useState([]);
-
   const [columnVisibility, setColumnVisibility] = useLocalStorage(
     "column-visibility-employees",
     {}
   );
-
   const [columnPinning, setColumnPinning] = useLocalStorage(
     "column-pinning-employees",
     {}
   );
 
+  // Handle cell edits
+  const handleCellEdit = (rowIndex, columnId, value) => {
+    const updatedEmployee = employees[rowIndex];
+    
+    setUpdatedEmployees(prev => {
+      const existing = prev.find(e => e.StaffId === updatedEmployee.StaffId);
+      
+      if (existing) {
+        return prev.map(e => 
+          e.StaffId === updatedEmployee.StaffId 
+            ? { ...e, [columnId]: value, isModified: true }
+            : e
+        );
+      }
+      return [...prev, { ...updatedEmployee, [columnId]: value, isModified: true }];
+    });
+
+    setEmployees(prev =>
+      prev.map((row, index) => {
+        if (index === rowIndex) {
+          return { ...row, [columnId]: value };
+        }
+        return row;
+      })
+    );
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      const res = await axios.get("http://localhost:5000/api/get-salary");
+      const data = res.data.map((staff) => ({
+        StaffId: staff.SId,
+        SalId: staff.SalId || staff.SId, // Use provided SalId or fallback to SId
+        code: staff.Code,
+        firstname: staff.FirstName,
+        surname: staff.LastName,
+        department_name: staff.Deptname,
+        Salary: staff.Salary || 0,
+        Pfon: staff.Pf_ESIon?.data?.[0] || 0,
+        TDS: staff.TDS?.data?.[0] || 0,
+        Year: staff.Year,
+        Month: staff.Month,
+        ABRY_Flag: staff.ABRY_Flag || 0,
+        isModified: false
+      }));
+      setEmployees(data);
+      setOriginalEmployees(data);
+    } catch (err) {
+      console.error("Error fetching salary data:", err);
+    }
+  };  
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    setSaveError(null);
+  
+    try {
+      if (employees.length === 0) {
+        setSaveError("No employee records to save");
+        setIsSaving(false);
+        return;
+      }
+  
+      const payload = {
+        key: "Hr!$h!kesh",
+        employees: employees.map(emp => ({
+          SalId: emp.SalId,            // Ensure SalId is included
+          StaffId: emp.SId,          // Ensure StaffId is included
+          Salary: emp.Salary,
+          Pf_ESIon: emp.Pfon || 0,
+          TDS: emp.TDS || 0,
+        }))
+      };
+  
+      const response = await axios.put("http://localhost:5000/api/update-salaries", payload);
+  
+      if (response.data.success) {
+        // Refresh data after a successful update
+        const refreshed = await axios.get("http://localhost:5000/api/get-salary");
+        const data = refreshed.data.map((staff) => ({
+          StaffId: staff.SId,
+          SalId: staff.SalId || staff.SId, // Again, fallback to SId if SalId is missing
+          code: staff.Code,
+          firstname: staff.FirstName,
+          surname: staff.LastName,
+          department_name: staff.Deptname,
+          Salary: staff.Salary || 0,
+          Pfon: staff.Pf_ESIon?.data?.[0] || 0,
+          TDS: staff.TDS?.data?.[0] || 0,
+          Year: staff.Year,
+          Month: staff.Month,
+          ABRY_Flag: staff.ABRY_Flag || 0,
+          isModified: false
+        }));
+        setOriginalEmployees(data);
+        setEmployees(data);
+        setUpdatedEmployees([]);
+      } else {
+        setSaveError(response.data.message || "Failed to update salaries");
+      }
+    } catch (error) {
+      setSaveError(error.message || "Error occurred while updating salaries");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+  
+  // React Table configuration
   const table = useReactTable({
     data: employees,
     columns: columns,
@@ -89,23 +170,12 @@ export default function EmployeesDatatable() {
     },
     meta: {
       updateData: (rowIndex, columnId, value) => {
-        setEmployees((old) =>
-          old.map((row, index) => {
-            if (index === rowIndex) {
-              return {
-                ...old[rowIndex],
-                [columnId]: value,
-              };
-            }
-            return row;
-          })
-        );
+        handleCellEdit(rowIndex, columnId, value);
       },
       deleteRow: (row) => {
         setEmployees((old) =>
           old.filter((oldRow) => oldRow.employee_id !== row.original.employee_id)
         );
-        // Also update originalEmployees to keep them in sync when deleting
         setOriginalEmployees((old) =>
           old.filter((oldRow) => oldRow.employee_id !== row.original.employee_id)
         );
@@ -113,7 +183,6 @@ export default function EmployeesDatatable() {
       deleteRows: (rows) => {
         const rowIds = rows.map((row) => row.original.employee_id);
         setEmployees((old) => old.filter((row) => !rowIds.includes(row.employee_id)));
-        // Also update originalEmployees to keep them in sync when deleting
         setOriginalEmployees((old) => old.filter((row) => !rowIds.includes(row.employee_id)));
       },
       setTableSettings,
@@ -137,7 +206,6 @@ export default function EmployeesDatatable() {
   });
 
   useDidUpdate(() => table.resetRowSelection(), [employees]);
-
   useLockScrollbar(tableSettings.enableFullScreen);
 
   return (
@@ -154,7 +222,10 @@ export default function EmployeesDatatable() {
             table={table}
             employees={employees}
             setEmployees={setEmployees}
-            originalEmployees={originalEmployees} // Pass the original data
+            originalEmployees={originalEmployees}
+            onSave={handleSave}
+            isSaving={isSaving}
+            saveError={saveError}
           />
           <div
             className={clsx(

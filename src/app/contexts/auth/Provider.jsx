@@ -1,20 +1,16 @@
-// Import Dependencies
+/* eslint-disable no-unused-vars */
+// app/contexts/auth/AuthProvider.js
 import { useEffect, useReducer } from "react";
-import isObject from "lodash/isObject";
 import PropTypes from "prop-types";
-import isString from "lodash/isString";
-
-// Local Imports
 import axios from "utils/axios";
 import { isTokenValid, setSession } from "utils/jwt";
 import { AuthContext } from "./context";
-
-// ----------------------------------------------------------------------
 
 const initialState = {
   isAuthenticated: false,
   isLoading: false,
   isInitialized: false,
+  isSecretKeyVerified: localStorage.getItem('isSecretKeyVerified') === 'true' || false,
   errorMessage: null,
   user: null,
 };
@@ -22,75 +18,83 @@ const initialState = {
 const reducerHandlers = {
   INITIALIZE: (state, action) => {
     const { isAuthenticated, user } = action.payload;
+    const isSadmin = user?.username?.toLowerCase() === 'sadmin';
     return {
       ...state,
       isAuthenticated,
       isInitialized: true,
+      isSecretKeyVerified: isSadmin 
+        ? localStorage.getItem('isSecretKeyVerified') === 'true'
+        : true,
       user,
     };
   },
 
-  LOGIN_REQUEST: (state) => {
-    return {
-      ...state,
-      isLoading: true,
-    };
-  },
+  LOGIN_REQUEST: (state) => ({
+    ...state,
+    isLoading: true,
+    errorMessage: null,
+  }),
 
   LOGIN_SUCCESS: (state, action) => {
     const { user } = action.payload;
+    const isSadmin = user?.username?.toLowerCase() === 'sadmin';
     return {
       ...state,
       isAuthenticated: true,
       isLoading: false,
+      isSecretKeyVerified: isSadmin 
+        ? localStorage.getItem('isSecretKeyVerified') === 'true'
+        : true,
       user,
     };
   },
 
-  LOGIN_ERROR: (state, action) => {
-    const { errorMessage } = action.payload;
+  LOGIN_ERROR: (state, action) => ({
+    ...state,
+    errorMessage: action.payload.errorMessage,
+    isLoading: false,
+  }),
 
+  SECRET_KEY_VERIFIED: (state) => {
+    localStorage.setItem('isSecretKeyVerified', 'true');
     return {
       ...state,
-      errorMessage,
-      isLoading: false,
+      isSecretKeyVerified: true,
     };
   },
 
-  LOGOUT: (state) => ({
-    ...state,
-    isAuthenticated: false,
-    user: null,
-  }),
+  LOGOUT: (state) => {
+    localStorage.removeItem('isSecretKeyVerified');
+    return {
+      ...state,
+      isAuthenticated: false,
+      user: null,
+      isSecretKeyVerified: false,
+    };
+  },
 };
 
 const reducer = (state, action) => {
   const handler = reducerHandlers[action.type];
-  if (handler) {
-    return handler(state, action);
-  }
-  return state;
+  return handler ? handler(state, action) : state;
 };
 
 export function AuthProvider({ children }) {
   const [state, dispatch] = useReducer(reducer, initialState);
 
   useEffect(() => {
-    const init = async () => {
+    const initialize = async () => {
       try {
-        const authToken = window.localStorage.getItem("authToken");
-
+        const authToken = localStorage.getItem("authToken");
         if (authToken && isTokenValid(authToken)) {
           setSession(authToken);
-
           const response = await axios.get("http://localhost:5000/user/profile");
-          const { user } = response.data;
-
           dispatch({
             type: "INITIALIZE",
             payload: {
               isAuthenticated: true,
-              user,
+              user: response.data.user,
             },
           });
         } else {
@@ -103,7 +107,6 @@ export function AuthProvider({ children }) {
           });
         }
       } catch (err) {
-        console.error(err);
         dispatch({
           type: "INITIALIZE",
           payload: {
@@ -113,53 +116,47 @@ export function AuthProvider({ children }) {
         });
       }
     };
-
-    init();
+    initialize();
   }, []);
 
-  const login = async ({ username, password }) => {
-    dispatch({
-      type: "LOGIN_REQUEST",
-    });
-
+  const login = async ({username, password}) => {
+    dispatch({ type: "LOGIN_REQUEST" });
     try {
-      const response = await axios.post("http://localhost:5000/api/login", {
-        username,
-        password,
-      });
-
-      const { authToken, user } = response.data;
-
-      if (!isString(authToken) && !isObject(user)) {
-        throw new Error("Response is not vallid");
-      }
-
-      setSession(authToken);
-
+      const response = await axios.post("http://localhost:5000/api/login", {username, password});
+      setSession(response.data.authToken);
       dispatch({
         type: "LOGIN_SUCCESS",
-        payload: {
-          user,
-        },
+        payload: { user: response.data.user },
       });
     } catch (err) {
       dispatch({
         type: "LOGIN_ERROR",
-        payload: {
-          errorMessage: err,
-        },
+        payload: { errorMessage: err.response?.data?.message || "Login failed" },
       });
     }
   };
 
-  const logout = async () => {
+  const verifySecretKey = async (secretKey) => {
+    try {
+      const response = await axios.post("http://localhost:5000/api/verify-secret", { secretKey });
+      if (response.data === "SMS") {
+        dispatch({ type: "SECRET_KEY_VERIFIED" });
+        return true;
+      }
+      throw new Error("Invalid secret key");
+    } catch (err) {
+      dispatch({
+        type: "LOGIN_ERROR",
+        payload: { errorMessage: "Invalid secret key" },
+      });
+      return false;
+    }
+  };
+
+  const logout = () => {
     setSession(null);
     dispatch({ type: "LOGOUT" });
   };
-
-  if (!children) {
-    return null;
-  }
 
   return (
     <AuthContext
@@ -167,6 +164,7 @@ export function AuthProvider({ children }) {
         ...state,
         login,
         logout,
+        verifySecretKey,
       }}
     >
       {children}

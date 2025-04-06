@@ -1,5 +1,4 @@
 /* eslint-disable no-unused-vars */
-// rows.jsx
 import dayjs from "dayjs";
 import PropTypes from "prop-types";
 import { Avatar } from "components/ui";
@@ -12,17 +11,65 @@ export function TextCell({ getValue }) {
   return <p className="text-sm+ font-medium text-gray-800 dark:text-dark-100">{getValue()}</p>;
 }
 
-export function InputCell({ getValue, row, field }) {
-  const value = getValue();
-  return <Input size="6" value={value || 0} />; // Default to 0 if undefined
+export function SalaryInputCell({ getValue, row, column, table }) {
+  const value = getValue() || 0;
+
+  const handleChange = (e) => {
+    const newValue = parseFloat(e.target.value) || 0;
+    table.options.meta.updateData(row.index, column.id, newValue);
+  };
+
+  return (
+    <Input 
+      size="6" 
+      value={value} 
+      onChange={handleChange}
+      type="number"
+      min="0"
+      className="w-24"
+    />
+  );
 }
 
-export function CheckCell({ getValue }) {
-  const value = getValue() === 1 ? true: false;
+export function PfEsiInputCell({ getValue, row, column, table }) {
+  const value = getValue() || 0;
+
+  const handleChange = (e) => {
+    const newValue = parseFloat(e.target.value) || 0;
+    table.options.meta.updateData(row.index, column.id, newValue);
+  };
+
   return (
-    <div className="flex justify-center">
-      <Checkbox checked={value} /> {/* Default to false if undefined */}
-    </div>
+    <Input 
+      size="6" 
+      value={value} 
+      onChange={handleChange}
+      type="number"
+      min="0"
+      max="1"
+      className="w-20"
+    />
+  );
+}
+
+export function TdsInputCell({ getValue, row, column, table }) {
+  const value = getValue() || 0;
+
+  const handleChange = (e) => {
+    const newValue = parseFloat(e.target.value) || 0;
+    table.options.meta.updateData(row.index, column.id, newValue);
+  };
+
+  return (
+    <Input 
+      size="6" 
+      value={value} 
+      onChange={handleChange}
+      type="number"
+      min="0"
+      max="1"
+      className="w-20"
+    />
   );
 }
 
@@ -45,14 +92,6 @@ export function EmployeeNameCell({ row, getValue }) {
   const name = getValue();
   return (
     <div className="flex items-center space-x-4 rtl:space-x-reverse">
-      <Avatar
-        size={9}
-        name={name}
-        src={row.original.avatar_img}
-        classNames={{
-          display: "mask is-squircle rounded-none text-sm",
-        }}
-      />
       <span className="font-medium text-gray-800 dark:text-dark-100">
         {name}
       </span>
@@ -92,8 +131,24 @@ EmployeeNameCell.propTypes = {
   getValue: PropTypes.func,
 };
 
-InputCell.propTypes = {
+SalaryInputCell.propTypes = {
   row: PropTypes.object,
+  column: PropTypes.object,
+  table: PropTypes.object,
+  getValue: PropTypes.func,
+};
+
+PfEsiInputCell.propTypes = {
+  row: PropTypes.object,
+  column: PropTypes.object,
+  table: PropTypes.object,
+  getValue: PropTypes.func,
+};
+
+TdsInputCell.propTypes = {
+  row: PropTypes.object,
+  column: PropTypes.object,
+  table: PropTypes.object,
   getValue: PropTypes.func,
 };
 
