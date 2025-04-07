@@ -39,6 +39,7 @@ const reducerHandlers = {
   LOGIN_SUCCESS: (state, action) => {
     const { user } = action.payload;
     const isSadmin = user?.username?.toLowerCase() === 'sadmin';
+    localStorage.setItem('username', user.username);
     return {
       ...state,
       isAuthenticated: true,

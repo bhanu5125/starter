@@ -1,4 +1,3 @@
-// src/components/index.jsx
 import {
   flexRender,
   getCoreRowModel,
@@ -18,39 +17,28 @@ import { TableSortIcon } from "components/shared/table/TableSortIcon";
 import { Page } from "components/shared/Page";
 import { useLockScrollbar, useDidUpdate, useLocalStorage } from "hooks";
 import { fuzzyFilter } from "utils/react-table/fuzzyFilter";
-import Toolbar from "./toolbar";
+import { Toolbar } from "./Toolbar";
 import { columns } from "./columns";
 import { PaginationSection } from "components/shared/table/PaginationSection";
 
 export default function EmployeesDatatable() {
-  const [originalEmployees, setOriginalEmployees] = useState([]); // Original data
-  const [employees, setEmployees] = useState([]); // Filtered data
+  const [employees, setEmployees] = useState([]);
 
+  const fetchEmployees = async (deptId = 0, year = new Date().getFullYear(), month = (new Date().getMonth() + 1), pPEVal = 0) => {
+    try {
+      const response = await axios.get("http://localhost:5000/api/get-report", {
+        params: { deptId, year, month, pPEVal },
+      });
+      console.log("Response data:", response); // Log the response data
+      setEmployees(response.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // Initial fetch
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get("http://localhost:5000/api/attendance");
-        // Map response data to expected structure.
-        const data = response.data.map((staff) => ({
-          employee_id: staff.SID,
-          code: staff.CODE,
-          firstname: staff.FIRSTNAME,
-          surname: staff.SURNAME,
-          status: staff.isActive.data[0] === 1 ? "Active" : "Inactive",
-          department_name: staff.DEPARTMENT,
-          attendance: staff.ABSENT || {}, // Expect object like { "Jan": { "1": true, ... } }
-          year: staff.Year,
-          ot: staff.OT || {}, // Similarly structured object.
-          bonus: staff.BONUS || 0,
-        }));
-        const sortedData = [...data].sort((a, b) => a.status.localeCompare(b.status));
-        setOriginalEmployees(sortedData);
-        setEmployees(sortedData);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-    fetchData();
+    fetchEmployees();
   }, []);
 
   const [tableSettings, setTableSettings] = useState({
@@ -88,17 +76,11 @@ export default function EmployeesDatatable() {
         );
       },
       deleteRow: (row) => {
-        setEmployees((old) =>
-          old.filter((oldRow) => oldRow.employee_id !== row.original.employee_id)
-        );
-        setOriginalEmployees((old) =>
-          old.filter((oldRow) => oldRow.employee_id !== row.original.employee_id)
-        );
+        setEmployees((old) => old.filter((oldRow) => oldRow.StaffId !== row.original.StaffId));
       },
       deleteRows: (rows) => {
-        const rowIds = rows.map((row) => row.original.employee_id);
-        setEmployees((old) => old.filter((row) => !rowIds.includes(row.employee_id)));
-        setOriginalEmployees((old) => old.filter((row) => !rowIds.includes(row.employee_id)));
+        const rowIds = rows.map((row) => row.original.StaffId);
+        setEmployees((old) => old.filter((row) => !rowIds.includes(row.StaffId)));
       },
       setTableSettings,
     },
@@ -122,50 +104,21 @@ export default function EmployeesDatatable() {
   useLockScrollbar(tableSettings.enableFullScreen);
 
   return (
-    <Page title="Attendance Management">
+    <Page title="Employees Management">
       <div className="transition-content w-full pb-5">
-        <div
-          className={clsx(
-            "flex h-full w-full flex-col",
-            tableSettings.enableFullScreen &&
-              "fixed inset-0 z-[61] bg-white pt-3 dark:bg-dark-900"
-          )}
-        >
-          <Toolbar
-            table={table}
-            employees={employees}
-            setEmployees={setEmployees}
-            originalEmployees={originalEmployees}
-          />
-          <div
-            className={clsx(
-              "transition-content flex grow flex-col pt-3",
-              tableSettings.enableFullScreen ? "overflow-hidden" : "px-[--margin-x]"
-            )}
-          >
-            <Card
-              className={clsx(
-                "relative flex grow flex-col",
-                tableSettings.enableFullScreen && "overflow-hidden"
-              )}
-            >
+        <div className={clsx("flex h-full w-full flex-col", tableSettings.enableFullScreen && "fixed inset-0 z-[61] bg-white pt-3 dark:bg-dark-900")}>
+          <Toolbar table={table} setEmployees={setEmployees} fetchEmployees={fetchEmployees} />
+          <div className={clsx("transition-content flex grow flex-col pt-3", tableSettings.enableFullScreen ? "overflow-hidden" : "px-[--margin-x]")}>
+            <Card className={clsx("relative flex grow flex-col", tableSettings.enableFullScreen && "overflow-hidden")}>
               <div className="table-wrapper min-w-full grow overflow-x-auto">
-                <Table
-                  hoverable
-                  dense={tableSettings.enableRowDense}
-                  sticky={tableSettings.enableFullScreen}
-                  className="w-full text-left rtl:text-right"
-                >
+                <Table hoverable dense={tableSettings.enableRowDense} sticky={tableSettings.enableFullScreen} className="w-full text-left rtl:text-right">
                   <THead>
                     {table.getHeaderGroups().map((headerGroup) => (
                       <Tr key={headerGroup.id}>
                         {headerGroup.headers.map((header) => (
                           <Th key={header.id} className="bg-gray-200 font-semibold uppercase text-gray-800 dark:bg-dark-800 dark:text-dark-100">
                             {header.column.getCanSort() ? (
-                              <div
-                                className="flex cursor-pointer select-none items-center space-x-3"
-                                onClick={header.column.getToggleSortingHandler()}
-                              >
+                              <div className="flex cursor-pointer select-none items-center space-x-3 rtl:space-x-reverse" onClick={header.column.getToggleSortingHandler()}>
                                 <span className="flex-1">
                                   {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                                 </span>
@@ -192,18 +145,14 @@ export default function EmployeesDatatable() {
                   </TBody>
                 </Table>
               </div>
-  
               {table.getCoreRowModel().rows.length > 0 ? (
                 <div className="px-4 pb-4 sm:px-5 sm:pt-4 bg-gray-50 dark:bg-dark-800">
                   <PaginationSection table={table} />
                 </div>
               ) : (
                 <div className="flex justify-center items-center p-8 text-gray-500">
-                  {employees.length === 0 && originalEmployees.length > 0 ? (
-                    <div className="text-center">
-                      <p className="text-lg font-medium">No matching records found</p>
-                      <p className="mt-1">Try adjusting your filters or search criteria</p>
-                    </div>
+                  {employees.length === 0 ? (
+                    <p className="text-lg font-medium">No matching records found</p>
                   ) : (
                     <p className="text-lg font-medium">Loading employees...</p>
                   )}

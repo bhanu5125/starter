@@ -70,7 +70,7 @@ export function Profile() {
                     className="text-base font-medium text-gray-700 hover:text-primary-600 focus:text-primary-600 dark:text-dark-100 dark:hover:text-primary-400 dark:focus:text-primary-400"
                     to="/settings/general"
                   >
-                    Super Admin
+                    {localStorage.getItem("username")}
                   </Link>
                 </div>
               </div>

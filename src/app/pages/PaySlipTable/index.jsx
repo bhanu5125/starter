@@ -39,7 +39,7 @@ export default function EmployeesDatatable() {
           code: staff.Code,
           firstname: staff.FirstName,
           surname: staff.LastName,
-          department_name: staff.DeptName,
+          department_name: staff.Deptname,
           Salary: staff.Salary || 0, // Default to 0 if undefined
           Pfon: staff.Pfon || 0, // Default to 0 if undefined
           Esion: staff.Esion || 0, // Default to 0 if undefined

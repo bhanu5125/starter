@@ -18,7 +18,7 @@ const items = [
     title: "Generate Payroll Report",
     description: "Payroll report month wise and generate for bank",
     isActive: false,
-    navigateto: "/tables/emp1"
+    navigateto: "/tables/genpayroll"
   },
   {
     id: "attendance",

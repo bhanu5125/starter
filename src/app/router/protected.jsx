@@ -97,6 +97,12 @@ const protectedRoutes = {
                         Component: (await import("app/pages/UserSettings/UserTable.jsx")).default,
                       }),
                     },
+                    {
+                      path: "genpayroll",
+                      lazy: async () => ({
+                        Component: (await import("app/pages/GenPayroll")).default,
+                      }),
+                    },
                   ],
                 },
               ],

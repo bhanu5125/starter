@@ -30,7 +30,7 @@ export function Toolbar({
   const handleGenerateClick = () => {
     const filteredEmployees = originalEmployees.filter((employee) => {
       return selectedDepartment === "All" || 
-             employee.Deptname === selectedDepartment;
+             employee.department_name === selectedDepartment;
     });
 
     setEmployees(filteredEmployees);
