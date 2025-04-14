@@ -92,6 +92,12 @@ const protectedRoutes = {
                       }),
                     },
                     {
+                      path: "payslip/:staffId",
+                      lazy: async () => ({
+                        Component: (await import("app/pages/PaySlipTable/PaySlip")).default,
+                      }),
+                    },
+                    {
                       path: "users",
                       lazy: async () => ({
                         Component: (await import("app/pages/UserSettings/UserTable.jsx")).default,

@@ -7,8 +7,8 @@ import { TableConfig } from "./TableConfig";
 import { useBreakpointsContext } from "app/contexts/breakpoint/context";
 import { Listbox } from "components/shared/form/Listbox";
 import { useState } from "react";
+import axios from "axios";
 
-// Define monthNames array at the top
 const monthNames = [
   { label: "January", value: 1 },
   { label: "February", value: 2 },
@@ -24,17 +24,24 @@ const monthNames = [
   { label: "December", value: 12 },
 ];
 
-export function Toolbar({ table, employees = [], setEmployees = () => {}, originalEmployees = [] }) {
+const departmentOptions = [
+  { label: "All", value: 0 },
+  { label: "TRIBE DEVELOPMENT", value: 1 },
+  { label: "TRIBE DESIGN", value: 2 },
+  { label: "TSS ADMIN", value: 3 },
+  { label: "TSS DATA ENTRY", value: 4 },
+  { label: "HTPL", value: 5 },
+];
+
+export function Toolbar({ table, setEmployees, fetchEmployees }) {
   const { isXs } = useBreakpointsContext();
   const isFullScreenEnabled = table.getState().tableSettings.enableFullScreen;
 
-  // Get current year and month
   const currentDate = new Date();
   const currentYear = currentDate.getFullYear();
-  const currentMonth = monthNames[currentDate.getMonth()].value; // Use monthNames array for month abbreviations
+  const currentMonth = monthNames[currentDate.getMonth()].value;
 
-  // Initialize state with current year and month
-  const [selectedDepartment, setSelectedDepartment] = useState("All");
+  const [selectedDepartment, setSelectedDepartment] = useState(0);
   const [selectedYear, setSelectedYear] = useState(currentYear);
   const [selectedMonth, setSelectedMonth] = useState(currentMonth);
 
@@ -44,55 +51,66 @@ export function Toolbar({ table, employees = [], setEmployees = () => {}, origin
   }));
 
   const handleDepartmentChange = (selectedOption) => {
-    setSelectedDepartment(selectedOption?.value || "");
+    setSelectedDepartment(selectedOption?.value || 0);
   };
 
   const handleYearChange = (selectedOption) => {
-    setSelectedYear(selectedOption?.value || null);
+    setSelectedYear(selectedOption?.value || currentYear);
   };
 
   const handleMonthChange = (selectedOption) => {
-    setSelectedMonth(selectedOption?.value || null);
+    setSelectedMonth(selectedOption?.value || currentMonth);
   };
 
-  const handleGenerateClick = () => {
-    const filteredEmployees = originalEmployees.filter((employee) => {
-      // Filter by department
-      const departmentMatch = !selectedDepartment || employee.department_name === selectedDepartment;
-
-      // Filter by year
-      const yearMatch = !selectedYear || employee.Year === selectedYear;
-
-      // Filter by month
-      const monthMatch = !selectedMonth || employee.Month === selectedMonth;
-
-      return departmentMatch && yearMatch && monthMatch;
-    });
-
-    console.log("Filtered Employees:", filteredEmployees);
-    setEmployees(filteredEmployees);
+  const handleGenerateClick = async () => {
+    try {
+      // Call the API with the current filter values (pPEVal is set to 0 here)
+      await fetchEmployees(selectedDepartment, selectedYear, selectedMonth, 0);
+    } catch (error) {
+      console.error("Error fetching employees:", error);
+    }
   };
-
+  
   return (
     <div className="table-toolbar">
-      <div className={clsx("transition-content flex items-center justify-between gap-5", isFullScreenEnabled ? "px-5 sm:px-6" : "px-[--margin-x] pt-4")}>
+      <div
+        className={clsx(
+          "transition-content flex items-center justify-between gap-5",
+          isFullScreenEnabled ? "px-5 sm:px-6" : "px-[--margin-x] pt-4",
+        )}
+      >
         <div className="min-w-0">
           <h2 className="truncate px-2 text-xl font-medium tracking-wide text-gray-800 dark:text-dark-50">
-            Staff Payroll
-            </h2>
+            PaySlip Reports for{" "}
+            {selectedDepartment === 0
+              ? "All"
+              : departmentOptions.find((d) => d.value === selectedDepartment)
+                  ?.label}{" "}
+            - {selectedYear} -{" "}
+            {selectedMonth
+              ? monthNames.find((m) => m.value === selectedMonth).label
+              : "All"}
+          </h2>
         </div>
       </div>
       {isXs ? (
         <>
-          <div className={clsx("flex space-x-2 pt-4 rtl:space-x-reverse [&_.input-root]:flex-1", isFullScreenEnabled ? "px-4 sm:px-5" : "px-[--margin-x]")}>
+          <div
+            className={clsx(
+              "flex space-x-2 pt-4 rtl:space-x-reverse",
+              isFullScreenEnabled ? "px-4 sm:px-5" : "px-[--margin-x]",
+            )}
+          >
             <SearchInput table={table} />
             <TableConfig table={table} />
           </div>
-          <div className={clsx("hide-scrollbar flex shrink-0 space-x-2 overflow-x-auto pb-1 pt-4 rtl:space-x-reverse", isFullScreenEnabled ? "px-4 sm:px-5" : "px-[--margin-x]")}>
+          <div
+            className={clsx(
+              "hide-scrollbar flex shrink-0 space-x-2 overflow-x-auto pb-1 pt-4 rtl:space-x-reverse",
+              isFullScreenEnabled ? "px-4 sm:px-5" : "px-[--margin-x]",
+            )}
+          >
             <Filters
-              employees={employees}
-              setEmployees={setEmployees}
-              originalEmployees={originalEmployees}
               selectedDepartment={selectedDepartment}
               selectedYear={selectedYear}
               selectedMonth={selectedMonth}
@@ -102,23 +120,18 @@ export function Toolbar({ table, employees = [], setEmployees = () => {}, origin
               handleGenerateClick={handleGenerateClick}
               years={years}
               months={monthNames}
+              departments={departmentOptions}
             />
-            <div className="flex items-center space-x-3 rtl:space-x-reverse">
-              <Button type="submit" className="min-w-[7rem]" color="primary" variant="outlined">
-                Save
-              </Button>
-              <Button type="submit" className="min-w-[7rem]" color="" variant="outlined">
-                Cancel
-              </Button>
-            </div>
           </div>
         </>
       ) : (
-        <div className={clsx("custom-scrollbar transition-content flex justify-between space-x-4 overflow-x-auto pb-1 pt-4 rtl:space-x-reverse", isFullScreenEnabled ? "px-4 sm:px-5" : "px-[--margin-x]")}>
+        <div
+          className={clsx(
+            "custom-scrollbar transition-content flex justify-between space-x-4 overflow-x-auto pb-1 pt-4 rtl:space-x-reverse",
+            isFullScreenEnabled ? "px-4 sm:px-5" : "px-[--margin-x]",
+          )}
+        >
           <Filters
-            employees={employees}
-            setEmployees={setEmployees}
-            originalEmployees={originalEmployees}
             selectedDepartment={selectedDepartment}
             selectedYear={selectedYear}
             selectedMonth={selectedMonth}
@@ -128,15 +141,9 @@ export function Toolbar({ table, employees = [], setEmployees = () => {}, origin
             handleGenerateClick={handleGenerateClick}
             years={years}
             months={monthNames}
+            departments={departmentOptions}
           />
-          <div className="flex items-center space-x-3 rtl:space-x-reverse">
-            <Button type="submit" className="min-w-[7rem]" color="primary" variant="outlined">
-              Save
-            </Button>
-            <Button type="submit" className="min-w-[7rem]" color="" variant="outlined">
-              Cancel
-            </Button>
-          </div>
+          
         </div>
       )}
     </div>
@@ -148,7 +155,9 @@ const SearchInput = ({ table }) => {
     <Input
       size="small"
       icon={<MagnifyingGlassIcon className="size-4" />}
-      onChange={(event) => table.getColumn("department_name").setFilterValue(event.target.value)}
+      onChange={(event) =>
+        table.getColumn("department_name").setFilterValue(event.target.value)
+      }
       placeholder="Search Employees..."
       className="flex-1"
     />
@@ -156,9 +165,6 @@ const SearchInput = ({ table }) => {
 };
 
 const Filters = ({
-  employees = [],
-  setEmployees = () => {},
-  originalEmployees = [],
   selectedDepartment,
   selectedYear,
   selectedMonth,
@@ -168,16 +174,8 @@ const Filters = ({
   handleGenerateClick,
   years,
   months,
+  departments,
 }) => {
-  const departments = [
-    { label: "All", value: null },
-    { label: "TRIBE DEVELOPMENT", value: "TRIBE DEVELOPMENT" },
-    { label: "TRIBE DESIGN", value: "TRIBE DESIGN" },
-    { label: "TSS ADMIN", value: "TSS ADMIN" },
-    { label: "TSS DATA ENTRY", value: "TSS DATA ENTRY" },
-    { label: "HTPL", value: "HTPL" },
-  ];
-
   return (
     <div className="flex items-center gap-4 p-2">
       <Listbox
@@ -205,7 +203,11 @@ const Filters = ({
         displayField="label"
       />
       <div className="flex gap-2">
-        <Button className="rounded-md px-4 py-2 text-white" color="primary" onClick={handleGenerateClick}>
+        <Button
+          className="rounded-md px-4 py-2 text-white"
+          color="primary"
+          onClick={handleGenerateClick}
+        >
           Generate
         </Button>
       </div>
@@ -215,7 +217,6 @@ const Filters = ({
 
 Toolbar.propTypes = {
   table: PropTypes.object.isRequired,
-  employees: PropTypes.array.isRequired,
   setEmployees: PropTypes.func.isRequired,
-  originalEmployees: PropTypes.array,
+  fetchEmployees: PropTypes.func.isRequired,
 };

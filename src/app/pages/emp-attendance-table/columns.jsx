@@ -11,8 +11,9 @@ import {
 } from "./rows";
 
 // Check admin status (this runs on client-side)
-const admin_value = localStorage.getItem("isAdmin");
-const isAdmin = admin_value === null ? false : true;
+const admin_value = localStorage.getItem("isSecretKeyVerified");
+console.log("Admin value from localStorage:", admin_value);
+const isAdmin = (admin_value === null || admin_value === false) ? false : true;
 
 const columnHelper = createColumnHelper();
 

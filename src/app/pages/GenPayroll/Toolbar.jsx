@@ -7,6 +7,7 @@ import { TableConfig } from "./TableConfig";
 import { useBreakpointsContext } from "app/contexts/breakpoint/context";
 import { Listbox } from "components/shared/form/Listbox";
 import { useState } from "react";
+import axios from "axios";
 
 const monthNames = [
   { label: "January", value: 1 },
@@ -70,6 +71,53 @@ export function Toolbar({ table, setEmployees, fetchEmployees }) {
     }
   };
 
+  const handleExport = async (reportType) => {
+    const params = new URLSearchParams({
+      deptId: selectedDepartment,
+      year: selectedYear,
+      month: selectedMonth,
+    });
+  
+    try {
+      const response = await axios.get(
+        `http://localhost:5000/api/export-${reportType}?${params.toString()}`,
+        {
+          responseType: "blob", // Important for binary responses
+        }
+      );
+      console.log("Export response:", response);
+  
+      if (response.status !== 200) throw new Error("Export failed");
+  
+      // Instead of calling response.blob(), access the blob directly from response.data
+      const blob = response.data;
+      const downloadUrl = window.URL.createObjectURL(blob);
+  
+      // Extract filename from content-disposition header if available, otherwise use a default
+      let filename = `HTPL${reportType === "salary" ? "SalReport" : "SalBankReport"}-${new Date().getTime()}.xlsx`;
+      const contentDisposition = response.headers["content-disposition"];
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename=(.+)/);
+        if (filenameMatch && filenameMatch[1]) {
+          filename = filenameMatch[1];
+        }
+      }
+  
+      const a = document.createElement("a");
+      a.href = downloadUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+  
+      // Cleanup
+      window.URL.revokeObjectURL(downloadUrl);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error("Export error:", error);
+      // Consider adding user-friendly error notification here
+    }
+  };
+  
   return (
     <div className="table-toolbar">
       <div
@@ -127,14 +175,15 @@ export function Toolbar({ table, setEmployees, fetchEmployees }) {
                 className="min-w-[7rem]"
                 color="primary"
                 variant="outlined"
+                onClick={() => handleExport("salary")}
               >
                 Export
               </Button>
               <Button
                 type="button"
                 className="min-w-[7rem]"
-                color="secondary"
-                variant="outlined"
+                color="primary"
+                onClick={() => handleExport("bank")}
               >
                 Export for Bank
               </Button>
@@ -161,21 +210,23 @@ export function Toolbar({ table, setEmployees, fetchEmployees }) {
             departments={departmentOptions}
           />
           <div className="flex items-center space-x-3 rtl:space-x-reverse">
-            <Button
-              type="button"
-              className="min-w-[7rem]"
-              color="primary"
-              variant="outlined"
-            >
-              Export
-            </Button>
-            <Button
-              type="button"
-              className="min-w-[7rem]"
-              color="primary"
-            >
-              Export for Bank
-            </Button>
+          <Button
+                type="button"
+                className="min-w-[7rem]"
+                color="primary"
+                variant="outlined"
+                onClick={() => handleExport("salary")}
+              >
+                Export
+              </Button>
+              <Button
+                type="button"
+                className="min-w-[7rem]"
+                color="primary"
+                onClick={() => handleExport("bank")}
+              >
+                Export for Bank
+              </Button>
           </div>
         </div>
       )}
