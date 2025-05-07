@@ -1,5 +1,4 @@
 /* eslint-disable no-unused-vars */
-// src/components/toolbar.jsx
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import clsx from "clsx";
 import PropTypes from "prop-types";
@@ -8,24 +7,31 @@ import { TableConfig } from "./TableConfig";
 import { useBreakpointsContext } from "app/contexts/breakpoint/context";
 import { Listbox } from "components/shared/form/Listbox";
 import { useState, useEffect } from "react";
+import axios from "axios";
 
-// Month names (abbreviated) matching attendance keys.
+// Month names with correct values matching backend expectation (01-12)
 const monthNames = [
-  { label: "January", value: "Jan" },
-  { label: "February", value: "Feb" },
-  { label: "March", value: "Mar" },
-  { label: "April", value: "Apr" },
-  { label: "May", value: "May" },
-  { label: "June", value: "Jun" },
-  { label: "July", value: "Jul" },
-  { label: "August", value: "Aug" },
-  { label: "September", value: "Sep" },
-  { label: "October", value: "Oct" },
-  { label: "November", value: "Nov" },
-  { label: "December", value: "Dec" },
+  { label: "January", value: "01" },
+  { label: "February", value: "02" },
+  { label: "March", value: "03" },
+  { label: "April", value: "04" },
+  { label: "May", value: "05" },
+  { label: "June", value: "06" },
+  { label: "July", value: "07" },
+  { label: "August", value: "08" },
+  { label: "September", value: "09" },
+  { label: "October", value: "10" },
+  { label: "November", value: "11" },
+  { label: "December", value: "12" },
 ];
 
-export function Toolbar({ table, employees = [], setEmployees = () => {}, originalEmployees = [] }) {
+export function Toolbar({
+  table,
+  employees = [],
+  setEmployees = () => {},
+  originalEmployees = [],
+  fetchAttendanceData,
+}) {
   const { isXs } = useBreakpointsContext();
   const isFullScreenEnabled = table.getState().tableSettings.enableFullScreen;
 
@@ -34,92 +40,175 @@ export function Toolbar({ table, employees = [], setEmployees = () => {}, origin
 
   // Get current date values.
   const now = new Date();
-  const currentYear = now.getFullYear();
-  const currentMonth = monthNames[now.getMonth()].value;
-  const currentDateValue = now.getDate().toString(); // as string
+  const currentYear = now.getFullYear().toString();
+  const currentMonth = (now.getMonth() + 1).toString().padStart(2, "0"); // 01-12 format
+  const currentDateValue = now.getDate().toString().padStart(2, "0"); // 01-31 format
 
-  console.log("Current Date:", currentDateValue);
-
-  // Initialize state. Non-admin users cannot change these.
+  // Initialize state
   const [selectedDepartment, setSelectedDepartment] = useState("");
-  const [selectedYear, setSelectedYear] = useState(isAdmin ? currentYear : currentYear);
-  const [selectedMonth, setSelectedMonth] = useState(isAdmin ? currentMonth : currentMonth);
-  const [selectedDate, setSelectedDate] = useState(isAdmin ? currentDateValue : currentDateValue);
+  const [selectedYear, setSelectedYear] = useState(currentYear);
+  const [selectedMonth, setSelectedMonth] = useState(currentMonth);
+  const [selectedDate, setSelectedDate] = useState(currentDateValue);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   // List of years.
   const years = Array.from({ length: 31 }, (_, i) => ({
     label: (2010 + i).toString(),
-    value: 2010 + i,
+    value: (2010 + i).toString(),
   }));
 
   // Generate dates for the selected month and year.
-  const generateDates = (year, monthAbbr) => {
-    const monthIndex = monthNames.findIndex((m) => m.value === monthAbbr);
-    const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+  const generateDates = (year, month) => {
+    const daysInMonth = new Date(parseInt(year), parseInt(month), 0).getDate();
     return Array.from({ length: daysInMonth }, (_, i) => ({
-      label: (i + 1).toString(),
-      value: (i + 1).toString(),
+      label: (i + 1).toString().padStart(2, "0"),
+      value: (i + 1).toString().padStart(2, "0"),
     }));
   };
 
-  const [dates, setDates] = useState(generateDates(selectedYear, selectedMonth));
+  const [dates, setDates] = useState(
+    generateDates(selectedYear, selectedMonth),
+  );
 
   useEffect(() => {
     // When selectedYear or selectedMonth changes, update the available dates.
     const newDates = generateDates(selectedYear, selectedMonth);
     setDates(newDates);
-    // If current date (as string) is valid, use it; otherwise, default to "1"
-    const dayNum = parseInt(currentDateValue, 10);
-    if (dayNum <= newDates.length) {
-      setSelectedDate(currentDateValue);
-    } else {
-      setSelectedDate("1");
+
+    // If current date is valid for the new month, keep it; otherwise, set to "01"
+    const maxDay = newDates.length;
+    if (parseInt(selectedDate) > maxDay) {
+      setSelectedDate("01");
     }
-  }, [selectedYear, selectedMonth, currentDateValue]);
+  }, [selectedYear, selectedMonth, selectedDate]);
+
+  // Function to apply all filters (department and search)
+  const applyFilters = () => {
+    let filteredData = [...originalEmployees];
+
+    // Apply department filter if selected
+    if (selectedDepartment) {
+      filteredData = filteredData.filter(
+        (employee) => employee.department_name === selectedDepartment,
+      );
+    }
+
+    // Apply search filter if there's a search term
+    if (searchTerm) {
+      const lowerSearchTerm = searchTerm.toLowerCase();
+      filteredData = filteredData.filter(
+        (employee) =>
+          (employee.name &&
+            employee.name.toLowerCase().includes(lowerSearchTerm)) ||
+          (employee.employee_id &&
+            employee.employee_id.toString().includes(lowerSearchTerm)) ||
+          (employee.department_name &&
+            employee.department_name.toLowerCase().includes(lowerSearchTerm)),
+      );
+    }
+
+    setEmployees(filteredData);
+  };
 
   const handleDepartmentChange = (selectedOption) => {
     setSelectedDepartment(selectedOption?.value || "");
   };
 
   const handleYearChange = (selectedOption) => {
-    if (isAdmin) {
-      setSelectedYear(selectedOption?.value || currentYear);
+    if (isAdmin && selectedOption) {
+      setSelectedYear(selectedOption.value);
     }
   };
 
   const handleMonthChange = (selectedOption) => {
-    if (isAdmin) {
-      setSelectedMonth(selectedOption?.value || currentMonth);
+    if (isAdmin && selectedOption) {
+      setSelectedMonth(selectedOption.value);
     }
   };
 
   const handleDateChange = (selectedOption) => {
-    if (isAdmin) {
-      setSelectedDate(selectedOption?.value || currentDateValue);
+    if (isAdmin && selectedOption) {
+      setSelectedDate(selectedOption.value);
     }
   };
 
-  const handleGenerateClick = () => {
-    // Filter originalEmployees based on department, year, and existence of attendance/OT for the selected month.
-    const filteredEmployees = originalEmployees.filter((employee) => {
-      const departmentMatch = !selectedDepartment || employee.department_name === selectedDepartment;
-      const yearMatch = !selectedYear || employee.year === selectedYear;
-      const monthMatch =
-        !selectedMonth ||
-        (employee.attendance && employee.attendance[selectedMonth] !== undefined) ||
-        (employee.ot && employee.ot[selectedMonth] !== undefined);
-      return departmentMatch && yearMatch && monthMatch;
-    });
+  const handleSearchChange = (event) => {
+    setSearchTerm(event.target.value);
+  };
 
-    // Attach the selected month and date to each employee.
-    const employeesWithDate = filteredEmployees.map((emp) => ({
-      ...emp,
-      selectedMonth,
-      selectedDate,
-    }));
+  const handleGenerateClick = async () => {
+    const dateStr = `${selectedYear}-${selectedMonth}-${selectedDate}`;
+    
+    // Reset all filters immediately
+    setSearchTerm("");
+    setSelectedDepartment("");
+    
+    // Force parent component refresh
+    await fetchAttendanceData(dateStr);
+  };
 
-    console.log("Filtered Employees:", employeesWithDate);
-    setEmployees(employeesWithDate);
+  const handleFilterClick = () => {
+    // Apply filters when the Filter button is clicked
+    applyFilters();
+  };
+
+  const handleSaveClick = async () => {
+    if (employees.length === 0) {
+      alert("No employees to save.");
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      // Prepare the records to save
+      const records = employees.map((emp) => {
+        const isAbsent = emp.attendance === true;
+        const otHours = emp.ot || 0;
+
+        return {
+          staffId: emp.employee_id,
+          date: `${selectedYear}-${String(selectedMonth).padStart(2, "0")}-${String(selectedDate).padStart(2, "0")}`,
+          status: isAbsent ? "absent" : "present",
+          ot: parseFloat(otHours) || 0,
+        };
+      });
+
+      if (records.length === 0) {
+        alert("No attendance records to save.");
+        return;
+      }
+
+      // Save attendance records
+      const response = await axios.post(
+        "http://localhost:5000/api/attendance",
+        {
+          records,
+        },
+      );
+
+      console.log("Save response:", response.data);
+      alert("Attendance data saved successfully!");
+    } catch (err) {
+      console.error("Error saving attendance data:", err);
+      alert("Failed to save attendance data. Please try again.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleResetFilters = () => {
+    setSelectedDepartment("");
+    setSearchTerm("");
+    setEmployees(originalEmployees);
+  };
+
+  const handleKeyPress = (event) => {
+    // Apply filters when Enter key is pressed in the search input
+    if (event.key === "Enter") {
+      applyFilters();
+    }
   };
 
   return (
@@ -127,7 +216,7 @@ export function Toolbar({ table, employees = [], setEmployees = () => {}, origin
       <div
         className={clsx(
           "transition-content flex items-center justify-between gap-5",
-          isFullScreenEnabled ? "px-5 sm:px-6" : "px-[--margin-x] pt-4"
+          isFullScreenEnabled ? "px-5 sm:px-6" : "px-[--margin-x] pt-4",
         )}
       >
         <div className="min-w-0">
@@ -141,16 +230,20 @@ export function Toolbar({ table, employees = [], setEmployees = () => {}, origin
           <div
             className={clsx(
               "flex space-x-2 pt-4 rtl:space-x-reverse",
-              isFullScreenEnabled ? "px-4 sm:px-5" : "px-[--margin-x]"
+              isFullScreenEnabled ? "px-4 sm:px-5" : "px-[--margin-x]",
             )}
           >
-            <SearchInput table={table} />
+            <SearchInput
+              value={searchTerm}
+              onChange={handleSearchChange}
+              onKeyPress={handleKeyPress}
+            />
             <TableConfig table={table} />
           </div>
           <div
             className={clsx(
               "hide-scrollbar flex shrink-0 space-x-2 overflow-x-auto pb-1 pt-4 rtl:space-x-reverse",
-              isFullScreenEnabled ? "px-4 sm:px-5" : "px-[--margin-x]"
+              isFullScreenEnabled ? "px-4 sm:px-5" : "px-[--margin-x]",
             )}
           >
             <Filters
@@ -170,13 +263,35 @@ export function Toolbar({ table, employees = [], setEmployees = () => {}, origin
               months={monthNames}
               dates={dates}
               isAdmin={isAdmin}
+              handleResetFilters={handleResetFilters}
             />
             <div className="flex items-center space-x-3">
-              <Button type="button" className="min-w-[7rem]" color="primary" variant="outlined">
-                Save
+              <Button
+                type="button"
+                className="min-w-[7rem]"
+                color="primary"
+                variant="outlined"
+                onClick={handleFilterClick}
+              >
+                Filter
               </Button>
-              <Button type="button" className="min-w-[7rem]" variant="outlined">
-                Cancel
+              <Button
+                type="button"
+                className="min-w-[7rem]"
+                color="primary"
+                variant="outlined"
+                onClick={handleSaveClick}
+                disabled={isSaving}
+              >
+                {isSaving ? "Saving..." : "Save"}
+              </Button>
+              <Button
+                type="button"
+                className="min-w-[7rem]"
+                variant="outlined"
+                onClick={handleResetFilters}
+              >
+                Reset
               </Button>
             </div>
           </div>
@@ -185,33 +300,62 @@ export function Toolbar({ table, employees = [], setEmployees = () => {}, origin
         <div
           className={clsx(
             "custom-scrollbar transition-content flex justify-between space-x-4 overflow-x-auto pb-1 pt-4",
-            isFullScreenEnabled ? "px-4 sm:px-5" : "px-[--margin-x]"
+            isFullScreenEnabled ? "px-4 sm:px-5" : "px-[--margin-x]",
           )}
         >
-          <Filters
-            employees={employees}
-            setEmployees={setEmployees}
-            originalEmployees={originalEmployees}
-            selectedDepartment={selectedDepartment}
-            selectedYear={selectedYear}
-            selectedMonth={selectedMonth}
-            selectedDate={selectedDate}
-            handleDepartmentChange={handleDepartmentChange}
-            handleYearChange={handleYearChange}
-            handleMonthChange={handleMonthChange}
-            handleDateChange={handleDateChange}
-            handleGenerateClick={handleGenerateClick}
-            years={years}
-            months={monthNames}
-            dates={dates}
-            isAdmin={isAdmin}
-          />
-          <div className="flex items-center space-x-3">
-            <Button type="button" className="min-w-[7rem]" color="primary" variant="outlined">
-              Save
+          <div className="flex items-center gap-4">
+            <SearchInput
+              value={searchTerm}
+              onChange={handleSearchChange}
+              onKeyPress={handleKeyPress}
+            />
+            <Filters
+              employees={employees}
+              setEmployees={setEmployees}
+              originalEmployees={originalEmployees}
+              selectedDepartment={selectedDepartment}
+              selectedYear={selectedYear}
+              selectedMonth={selectedMonth}
+              selectedDate={selectedDate}
+              handleDepartmentChange={handleDepartmentChange}
+              handleYearChange={handleYearChange}
+              handleMonthChange={handleMonthChange}
+              handleDateChange={handleDateChange}
+              handleGenerateClick={handleGenerateClick}
+              years={years}
+              months={monthNames}
+              dates={dates}
+              isAdmin={isAdmin}
+              handleResetFilters={handleResetFilters}
+            />
+            <Button
+              type="button"
+              className="min-w-[7rem]"
+              color="primary"
+              variant="outlined"
+              onClick={handleFilterClick}
+            >
+              Filter
             </Button>
-            <Button type="button" className="min-w-[7rem]" variant="outlined">
-              Cancel
+          </div>
+          <div className="flex items-center space-x-3">
+            <Button
+              type="button"
+              className="min-w-[7rem]"
+              color="primary"
+              variant="outlined"
+              onClick={handleSaveClick}
+              disabled={isSaving}
+            >
+              {isSaving ? "Saving..." : "Save"}
+            </Button>
+            <Button
+              type="button"
+              className="min-w-[7rem]"
+              variant="outlined"
+              onClick={handleResetFilters}
+            >
+              Reset
             </Button>
           </div>
         </div>
@@ -220,14 +364,16 @@ export function Toolbar({ table, employees = [], setEmployees = () => {}, origin
   );
 }
 
-const SearchInput = ({ table }) => {
+const SearchInput = ({ value, onChange, onKeyPress }) => {
   return (
     <Input
       size="small"
       icon={<MagnifyingGlassIcon className="size-4" />}
-      onChange={(event) => table.getColumn("department_name").setFilterValue(event.target.value)}
+      value={value}
+      onChange={onChange}
+      onKeyPress={onKeyPress}
       placeholder="Search Employees..."
-      className="flex-1"
+      className="min-w-[240px] flex-1"
     />
   );
 };
@@ -251,17 +397,18 @@ const Filters = ({
   isAdmin,
 }) => {
   const departments = [
-    { label: "All", value: null },
+    { label: "All", value: "" },
     { label: "TRIBE DEVELOPMENT", value: "TRIBE DEVELOPMENT" },
     { label: "TRIBE DESIGN", value: "TRIBE DESIGN" },
     { label: "TSS ADMIN", value: "TSS ADMIN" },
     { label: "TSS DATA ENTRY", value: "TSS DATA ENTRY" },
     { label: "HTPL", value: "HTPL" },
   ];
+  const [isLoading, setIsLoading] = useState(false);
   return (
     <div className="flex items-center gap-4 p-2">
       <Listbox
-        style={{ minWidth: "200px", maxWidth: "350px", width: "100%" }}
+        style={{ minWidth: "180px", maxWidth: "250px", width: "100%" }}
         data={departments}
         value={departments.find((d) => d.value === selectedDepartment) || null}
         placeholder="Select Department"
@@ -269,7 +416,7 @@ const Filters = ({
         displayField="label"
       />
       <Listbox
-        style={{ minWidth: "200px", maxWidth: "350px", width: "100%" }}
+        style={{ minWidth: "120px", maxWidth: "150px", width: "100%" }}
         data={years}
         value={years.find((y) => y.value === selectedYear) || null}
         placeholder="Select Year"
@@ -278,7 +425,7 @@ const Filters = ({
         disabled={!isAdmin}
       />
       <Listbox
-        style={{ minWidth: "200px", maxWidth: "350px", width: "100%" }}
+        style={{ minWidth: "120px", maxWidth: "150px", width: "100%" }}
         data={months}
         value={months.find((m) => m.value === selectedMonth) || null}
         placeholder="Select Month"
@@ -287,7 +434,7 @@ const Filters = ({
         disabled={!isAdmin}
       />
       <Listbox
-        style={{ minWidth: "100px", maxWidth: "150px", width: "100%" }}
+        style={{ minWidth: "120px", maxWidth: "150px", width: "100%" }}
         data={dates}
         value={dates.find((d) => d.value === selectedDate) || null}
         placeholder="Select Date"
@@ -295,11 +442,16 @@ const Filters = ({
         displayField="label"
         disabled={!isAdmin}
       />
-      <div className="flex gap-2">
-        <Button className="rounded-md px-4 py-2 text-white" color="primary" onClick={handleGenerateClick}>
-          Generate
-        </Button>
-      </div>
+      <Button
+        type="button"
+        color="primary"
+        variant="outlined"
+        className="min-w-[7rem]"
+        onClick={handleGenerateClick}
+        disabled={isLoading} // Disable while loading
+      >
+        {isLoading ? "Generating..." : "Generate"}
+      </Button>
     </div>
   );
 };
@@ -308,7 +460,34 @@ Toolbar.propTypes = {
   table: PropTypes.object.isRequired,
   employees: PropTypes.array.isRequired,
   setEmployees: PropTypes.func.isRequired,
+  originalEmployees: PropTypes.array.isRequired,
+  fetchAttendanceData: PropTypes.func.isRequired,
+};
+
+SearchInput.propTypes = {
+  value: PropTypes.string,
+  onChange: PropTypes.func.isRequired,
+  onKeyPress: PropTypes.func.isRequired,
+};
+
+Filters.propTypes = {
+  employees: PropTypes.array,
+  setEmployees: PropTypes.func,
   originalEmployees: PropTypes.array,
+  selectedDepartment: PropTypes.string,
+  selectedYear: PropTypes.string,
+  selectedMonth: PropTypes.string,
+  selectedDate: PropTypes.string,
+  handleDepartmentChange: PropTypes.func,
+  handleYearChange: PropTypes.func,
+  handleMonthChange: PropTypes.func,
+  handleDateChange: PropTypes.func,
+  handleGenerateClick: PropTypes.func,
+  years: PropTypes.array,
+  months: PropTypes.array,
+  dates: PropTypes.array,
+  isAdmin: PropTypes.bool,
+  handleResetFilters: PropTypes.func,
 };
 
 export default Toolbar;

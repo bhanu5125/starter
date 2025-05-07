@@ -1,5 +1,4 @@
-
-// src/components/rows.jsx
+/* eslint-disable no-unused-vars */
 import React from "react";
 import dayjs from "dayjs";
 import PropTypes from "prop-types";
@@ -23,60 +22,69 @@ export function TextCell({ getValue }) {
 }
 
 export function OTCell({ getValue, row }) {
-  const selectedMonth = row.original.selectedMonth;
-  const valueObj = getValue();
-  // Determine initial value for the selected month (or default to 0)
-  const initialVal =
-    selectedMonth && typeof valueObj === "object" ? valueObj[selectedMonth] ?? 0 : 0;
-  const [value, setValue] = React.useState(initialVal);
-  
+  const [value, setValue] = React.useState(getValue() || 0);
+
   const handleChange = (e) => {
-    const newVal = e.target.value;
+    const newVal = Number(e.target.value);
     setValue(newVal);
-    // Directly update the row's "ot" field for the selected month
-    row.original.ot = { 
-      ...(typeof valueObj === "object" ? valueObj : {}), 
-      [selectedMonth]: newVal 
-    };
+    row.original.ot = newVal; // Directly update ot field
   };
 
-  return <Input size="4" value={value} onChange={handleChange} />;
+  return (
+    <Input 
+      size="small"
+      type="number"
+      min="0"
+      max="24"
+      value={value}
+      onChange={handleChange}
+      className="w-20"
+    />
+  );
 }
 
 export function InputCell({ getValue, row, field }) {
-  const selectedMonth = row.original.selectedMonth;
-  const valueObj = getValue();
-  // Determine initial value for the selected month (or default to 0)
-  const initialVal =
-    selectedMonth && typeof valueObj === "object" ? valueObj[selectedMonth] ?? 0 : valueObj;
-  const [value, setValue] = React.useState(initialVal);
-  
+  const [inputValue, setInputValue] = React.useState(getValue() || 0);
+
   const handleChange = (e) => {
-    const newVal = e.target.value;
-    setValue(newVal);
-    // Directly update the row's field (for example "bonus") for the selected month
-    row.original[field] = { 
-      ...(typeof valueObj === "object" ? valueObj : {}), 
-      [selectedMonth]: newVal 
-    };
+    const newVal = Number(e.target.value);
+    setInputValue(newVal);
+    row.original[field] = newVal; // field will be "bonus" etc
   };
 
-  return <Input size={field === "bonus" ? "6" : "3"} value={value} onChange={handleChange} />;
+  return (
+    <Input 
+      size="small"
+      type="number"
+      min="0"
+      value={inputValue}
+      onChange={handleChange}
+      className={field === "bonus" ? "w-24" : "w-16"}
+    />
+  );
 }
 
-export function CheckCell({ getValue }) {
-  // For this dummy checkbox, initialize from getValue or default to false.
-  const initial =
-    (getValue() && typeof getValue() === "object" ? getValue().data : getValue()) || false;
-  const [checked, setChecked] = React.useState(initial);
-  
+export function CheckCell({ getValue, row }) {
+  const attendanceStatus = getValue();  // boolean: true = absent, false = present
+
+  const [checked, setChecked] = React.useState(!attendanceStatus); 
+  // checked = present → true, unchecked = absent → false
+
   const handleChange = () => {
-    setChecked(!checked);
+    const newChecked = !checked;
+    setChecked(newChecked);
+    row.original.attendance = !newChecked; 
+    // If checked (present), attendance = false (not absent)
+    // If unchecked (absent), attendance = true (absent)
   };
 
   return (
     <div className="flex justify-center">
-      <Checkbox checked={checked} onChange={handleChange} />
+      <Checkbox 
+        checked={checked}
+        onChange={handleChange}
+        title={checked ? "Present" : "Absent"}
+      />
     </div>
   );
 }
@@ -100,12 +108,7 @@ export function EmployeeNameCell({ row, getValue }) {
   const name = getValue();
   return (
     <div className="flex items-center space-x-4 rtl:space-x-reverse">
-      <Avatar
-        size={9}
-        name={name}
-        src={row.original.avatar_img}
-        classNames={{ display: "mask is-squircle rounded-none text-sm" }}
-      />
+
       <span className="font-medium text-gray-800 dark:text-dark-100">{name}</span>
     </div>
   );
@@ -131,4 +134,5 @@ EmployeeNameCell.propTypes = { row: PropTypes.object, getValue: PropTypes.func }
 InputCell.propTypes = { row: PropTypes.object, getValue: PropTypes.func, field: PropTypes.string };
 DepartmentCell.propTypes = { getValue: PropTypes.func };
 StatusCell.propTypes = { getValue: PropTypes.func };
-CheckCell.propTypes = { getValue: PropTypes.func };
+CheckCell.propTypes = { getValue: PropTypes.func, row: PropTypes.object };
+OTCell.propTypes = { getValue: PropTypes.func, row: PropTypes.object };

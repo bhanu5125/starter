@@ -10,13 +10,25 @@ import {
   OTCell
 } from "./rows";
 
-// Check admin status (this runs on client-side)
-const admin_value = localStorage.getItem("isSecretKeyVerified");
-console.log("Admin value from localStorage:", admin_value);
-const isAdmin = (admin_value === null || admin_value === false) ? false : true;
+// We'll determine admin status in a safer way that works in both server and client contexts
+const determineIsAdmin = () => {
+  try {
+    if (typeof window !== 'undefined') {
+      const adminValue = localStorage.getItem("isSecretKeyVerified");
+      return adminValue === "true";
+    }
+    return false;
+  } catch (error) {
+    console.error("Error accessing localStorage:", error);
+    return false;
+  }
+};
+
+const isAdmin = determineIsAdmin();
 
 const columnHelper = createColumnHelper();
 
+// Define base columns that everyone can see
 const baseColumns = [
   columnHelper.display({
     id: "SNo",
@@ -44,7 +56,7 @@ const baseColumns = [
     cell: CheckCell,
   }),
   columnHelper.accessor("ot", {
-    header: "OT (In days)",
+    header: "OT (Hours)",
     cell: OTCell,
   }),
 ];
