@@ -18,7 +18,7 @@ import { TableSortIcon } from "components/shared/table/TableSortIcon";
 import { Page } from "components/shared/Page";
 import { useLockScrollbar, useDidUpdate, useLocalStorage } from "hooks";
 import { fuzzyFilter } from "utils/react-table/fuzzyFilter";
-import Toolbar from "./toolbar";
+import Toolbar from "./Toolbar";
 import { columns } from "./columns";
 import { PaginationSection } from "components/shared/table/PaginationSection";
 
