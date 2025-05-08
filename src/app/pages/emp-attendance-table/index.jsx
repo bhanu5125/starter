@@ -52,7 +52,7 @@ export default function EmployeesDatatable() {
   const fetchAttendanceData = async (date) => {
     setIsLoading(true);
     try {
-      const resp = await axios.get("http://localhost:5000/api/attendance", {
+      const resp = await axios.get("https://tms-backend-three.vercel.app/api/attendance", {
         params: { date }
       });
   

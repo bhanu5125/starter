@@ -23,7 +23,7 @@ export default function PayslipReport() {
       setLoading(false);
     } else {
       axios
-        .get("http://localhost:5000/api/get-payslip", {
+        .get("https://tms-backend-three.vercel.app/api/get-payslip", {
           params: { staffId: id },
         })
         .then((res) => {

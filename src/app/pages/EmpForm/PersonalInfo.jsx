@@ -104,8 +104,8 @@ export function PersonalInfo({
       };
 
       const endpoint = isEditMode
-        ? `http://localhost:5000/api/update-staff/${code}`
-        : "http://localhost:5000/api/submit-form";
+        ? `https://tms-backend-three.vercel.app/api/update-staff/${code}`
+        : "https://tms-backend-three.vercel.app/api/submit-form";
 
       const method = isEditMode ? "PUT" : "POST";
 

@@ -13,7 +13,7 @@ export default function EmpEdit() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/get-staff/${code}`);
+        const response = await axios.get(`https://tms-backend-three.vercel.app/api/get-staff/${code}`);
         console.log("Raw data:", response.data);
         
         if (response.data) {

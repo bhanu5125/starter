@@ -26,7 +26,7 @@ export default function EmployeesDatatable() {
 
   const fetchEmployees = async (deptId = 0, year = new Date().getFullYear(), month = (new Date().getMonth() + 1), pPEVal = 0) => {
     try {
-      const response = await axios.get("http://localhost:5000/api/get-report", {
+      const response = await axios.get("https://tms-backend-three.vercel.app/api/get-report", {
         params: { deptId, year, month, pPEVal },
       });
       console.log("Response data:", response); // Log the response data
