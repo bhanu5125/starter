@@ -16,11 +16,11 @@ body {
 }
 
 [data-card-skin="bordered"] body {
-  @apply bg-white dark:bg-light-900;
+  @apply bg-white dark:bg-dark-900;
 }
 
 .dark[data-card-skin="bordered"] body {
-  @apply bg-light-900;
+  @apply bg-dark-900;
 }
 
 body.is-monochrome::before {
