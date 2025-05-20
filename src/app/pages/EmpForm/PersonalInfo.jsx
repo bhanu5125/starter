@@ -1,28 +1,14 @@
+/* eslint-disable no-unused-vars */
 import { useEffect } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import TextareaAutosize from "react-textarea-autosize";
 import axios from "axios";
-import { UserIcon, PhoneIcon } from "@heroicons/react/20/solid";
 import PropTypes from "prop-types";
-
-// Components
-import { Listbox } from "components/shared/form/Listbox";
-import { Button, Input, Textarea } from "components/ui";
+import { Input, Button, Textarea } from "components/ui";
 import { DatePicker } from "components/shared/form/Datepicker";
-
-// Schema and Context
+import { Listbox } from "components/shared/form/Listbox";
 import { personalInfoSchema } from "./schema";
-
-const staffGroups = [
-  { label: "1", value: 1 },
-  { label: "2", value: 2 },
-  { label: "3", value: 3 },
-  { label: "4", value: 4 },
-  { label: "5", value: 5 },
-  { label: "6", value: 6 },
-  { label: "7", value: 7 },
-];
+import TextareaAutosize from "react-textarea-autosize";
 
 const departments = [
   { label: "TRIBE DEVELOPMENT", value: 1 },
@@ -37,41 +23,69 @@ const activeStatuses = [
   { label: "Inactive", value: 0 },
 ];
 
+const staffGroups = [
+  { label: "1", value: 1 },
+  { label: "2", value: 2 },
+  { label: "3", value: 3 },
+  { label: "4", value: 4 },
+  { label: "5", value: 5 },
+  { label: "6", value: 6 },
+  { label: "7", value: 7 },
+];
+
 export function PersonalInfo({
   readOnly = false,
   isEditMode = false,
-  defaultValues,
+  defaultValues = {},
   code,
   onSuccess,
 }) {
   const {
     register,
     handleSubmit,
-    control,
+    setValue,
+    watch,
     reset,
     formState: { errors, isSubmitting },
   } = useForm({
-    resolver: !readOnly && yupResolver(personalInfoSchema),
-    defaultValues, // Use defaultValues directly
+    resolver: !readOnly ? yupResolver(personalInfoSchema) : undefined,
+    defaultValues: {
+      ...defaultValues,
+      deptId: departments.find(d => d.value === defaultValues.deptId) || null,
+      groupNo: staffGroups.find(g => g.value === defaultValues.StaffType) || null,
+    },
   });
 
   useEffect(() => {
-    // Transform defaultValues to match Listbox's expected format
-    const transformedDefaultValues = {
-      ...defaultValues,
-      deptId: departments.find((dept) => dept.value === defaultValues.deptId), // Find the department object
-      isActive: activeStatuses.find(
-        (status) => status.value === defaultValues.isActive,
-      ), // Find the status object
-    };
+  const resolvedDefaults = {
+    ...defaultValues,
+    deptId: departments.find((d) => d.value === defaultValues?.deptId) || null,
+    groupNo: staffGroups.find((g) => g.value === defaultValues?.StaffType) || null,
+    DOJ: defaultValues?.DOJ ? new Date(defaultValues.DOJ) : null,
+    DOR: defaultValues?.DOR ? new Date(defaultValues.DOR) : null,
+  };
+  reset(resolvedDefaults);
+  /*
+  console.log("Default Values:", defaultValues);
+  console.log("Resolved Defaults on Reset:", resolvedDefaults);
+  console.log(defaultValues.DOJ);
+  console.log(resolvedDefaults.DOJ);
+  */
+}, [defaultValues, reset]);
 
-    // Reset the form with transformed values
-    reset(transformedDefaultValues);
-  }, [defaultValues, reset]);
+
+  function formatDate(dateString) {
+  if (!dateString) return null;
+  const date = new Date(dateString);
+  return date.toISOString().split('T')[0];
+}
+
+  const deptId = watch("deptId");
+  const DOJ = watch("DOJ");
+  const DOR = watch("DOR");
 
   const onSubmit = async (data) => {
     try {
-      // Transform data back to the expected API format
       const formData = {
         tblsourcebk: {
           Emp_FName: data.firstName,
@@ -81,11 +95,13 @@ export function PersonalInfo({
           Aadhar_Number: data.Aadhaar,
           Emp_P_No: data.primaryPhone,
           Emp_A_No: data.secondaryPhone,
-          DOJ: data.DOJ,
+          DOJ: formatDate(data.DOJ),
           Bank_Acc_No: data.AccountNumber,
           IFSC_Code: data.IFSC,
-          Dept: data.deptId.value, // Use the value property
+          Dept: data.deptId?.value,
           Bank_Name: data.BankName,
+          Branch: data.Branch,
+          Otherinfo : data.Otherinfo || "",
         },
         staff: {
           FirstName: data.firstName,
@@ -94,32 +110,41 @@ export function PersonalInfo({
           Address: data.address,
           PrimaryPhone: data.primaryPhone,
           SecondaryPhone: data.secondaryPhone,
-          IsActive: data.isActive.value, // Use the value property
-          DOJ: data.DOJ,
-          DeptId: data.deptId.value, // Use the value property
+          IsActive: data.isActive?.value ?? 1,
+          StaffType: data.groupNo?.value ?? 0,
+          DOJ: formatDate(data.DOJ),
+          DeptId: data.deptId?.value,
           ModifiedDate: new Date().toISOString(),
           ModifiedBy: 1,
-          GroupNo: data.groupNo,
         },
+        resignationReason: data.resignationReason || "",
       };
+
+      console.log("Form Data:", formData);
 
       const endpoint = isEditMode
         ? `https://tms-backend-three.vercel.app/api/update-staff/${code}`
         : "https://tms-backend-three.vercel.app/api/submit-form";
 
       const method = isEditMode ? "PUT" : "POST";
-
       const response = await axios({
         method,
         url: endpoint,
         data: formData,
+        headers: {
+          "Content-Type": "application/json",
+        },
       });
 
-      if (response.status === 200) {
-        onSuccess?.();
+      if (response.status >= 200 && response.status < 300) {
+        onSuccess();
       }
     } catch (error) {
-      console.error("Form submission error:", error);
+      console.error("Form submission error:", {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+      });
     }
   };
 
@@ -131,206 +156,70 @@ export function PersonalInfo({
         </h5>
 
         <div className="grid gap-4 sm:grid-cols-3">
-          <Input
-            {...register("firstName")}
-            readOnly={readOnly}
-            disabled={readOnly || isSubmitting}
-            prefix={<UserIcon className="size-5" />}
-            label="First Name"
-            error={errors?.firstName?.message}
-            placeholder="Enter First Name"
-          />
-          <Input
-            {...register("lastName")}
-            readOnly={readOnly}
-            disabled={readOnly || isSubmitting}
-            prefix={<UserIcon className="size-5" />}
-            label="Last Name"
-            error={errors?.lastName?.message}
-            placeholder="Enter Last Name"
-          />
-          <Input
-            {...register("guardian")}
-            readOnly={readOnly}
-            disabled={readOnly || isSubmitting}
-            prefix={<UserIcon className="size-5" />}
-            label="Guardian Name"
-            error={errors?.guardian?.message}
-            placeholder="Enter Guardian Name"
-          />
+          <Input {...register("firstName")} readOnly={readOnly} disabled={readOnly || isSubmitting} label="First Name" error={errors.firstName?.message} placeholder="Enter First Name" />
+          <Input {...register("lastName")} readOnly={readOnly} disabled={readOnly || isSubmitting} label="Last Name" error={errors.lastName?.message} placeholder="Enter Last Name" />
+          <Input {...register("guardian")} readOnly={readOnly} disabled={readOnly || isSubmitting} label="Guardian Name" error={errors.guardian?.message} placeholder="Enter Guardian Name" />
         </div>
 
         <div className="grid gap-4 lg:grid-cols-3">
-          <Input
-            {...register("primaryPhone")}
-            readOnly={readOnly}
-            disabled={readOnly || isSubmitting}
-            prefix={<PhoneIcon className="size-5" />}
-            label="Primary Phone"
-            error={errors?.primaryPhone?.message}
-            placeholder="Enter Primary Phone"
-          />
-          <Input
-            {...register("secondaryPhone")}
-            readOnly={readOnly}
-            disabled={readOnly || isSubmitting}
-            prefix={<PhoneIcon className="size-5" />}
-            label="Secondary Phone"
-            error={errors?.secondaryPhone?.message}
-            placeholder="Enter Secondary Phone"
-          />
-          <Input
-            {...register("Aadhaar")}
-            readOnly={readOnly}
-            disabled={readOnly || isSubmitting}
-            label="Aadhaar Number"
-            error={errors?.Aadhaar?.message}
-            placeholder="Enter Aadhaar Number"
-          />
+          <Input {...register("primaryPhone")} readOnly={readOnly} disabled={readOnly || isSubmitting} label="Primary Phone" error={errors.primaryPhone?.message} placeholder="Enter Primary Phone" />
+          <Input {...register("secondaryPhone")} readOnly={readOnly} disabled={readOnly || isSubmitting} label="Secondary Phone" error={errors.secondaryPhone?.message} placeholder="Enter Secondary Phone" />
+          <Input {...register("Aadhaar")} readOnly={readOnly} disabled={readOnly || isSubmitting} label="Aadhaar Number" error={errors.Aadhaar?.message} placeholder="Enter Aadhaar Number" />
         </div>
 
-        <h5 className="text-lg font-medium text-gray-800 dark:text-dark-100">
-          Staff Information
-        </h5>
+        <h5 className="text-lg font-medium text-gray-800 dark:text-dark-100">Staff Information</h5>
 
         <div className="grid gap-4 lg:grid-cols-3">
           {(isEditMode || readOnly) && (
-            <>
-              <Input
-                {...register("code")}
-                readOnly={readOnly}
-                disabled={true}
-                label="Staff Code"
-                error={errors?.Aadhaar?.message}
-                placeholder="Code"
-              />
-            </>
+            <Input {...register("code")} readOnly disabled label="Staff Code" />
           )}
-          <Controller
-            name="deptId"
-            control={control}
-            render={({ field }) => {
-              console.log("Departments Data:", departments); // Debugging
 
-              return (
-                <>
-                  <Listbox
-                    {...field}
-                    disabled={readOnly || isSubmitting}
-                    data={departments ?? []} // Prevent undefined error
-                    label="Department"
-                    placeholder="Select Department"
-                    displayField="label"
-                    error={errors?.deptId?.message}
-                  />
-
-                  {field.value?.value === 4 && (
-                    <Controller
-                      name="groupNo"
-                      control={control}
-                      render={({ field: groupField }) => {
-                        console.log("Staff Groups Data:", staffGroups); // Debugging
-
-                        return (
-                          <Listbox
-                            {...groupField}
-                            disabled={readOnly || isSubmitting}
-                            data={staffGroups} // Prevent undefined error
-                            label="Staff Group"
-                            placeholder="Select Staff Group"
-                            displayField="label"
-                            error={errors?.groupNo?.message}
-                          />
-                        );
-                      }}
-                    />
-                  )}
-                </>
-              );
-            }}
+          <Listbox
+            label="Department"
+            data={departments}
+            displayField="label"
+            value={deptId}
+            onChange={(val) => setValue("deptId", val)}
+            disabled={readOnly || isSubmitting}
+            placeholder="Select Department"
+            error={errors.deptId?.message}
           />
-          {/*
-          <Controller
-            name="isActive"
-            control={control}
-            render={({ field }) => {
-              console.log("Status Value:", field.value); // Debugging
-              return (
-                <Listbox
-                  {...field}
-                  disabled={readOnly || isSubmitting}
-                  data={activeStatuses}
-                  label="Status"
-                  placeholder="Select Status"
-                  displayField="label"
-                  error={errors?.isActive?.message}
-                />
-              );
-            }}
-          />*/}
-          <Controller
-            name="DOJ"
-            control={control}
-            render={({ field }) => {
-              let selected = null;
-              if (field.value) {
-                try {
-                  const date = new Date(field.value);
-                  if (!isNaN(date.getTime())) {
-                    selected = date;
-                  }
-                } catch (e) {
-                  console.error("Invalid date:", field.value, e);
-                }
-              }
 
-              return (
-                <DatePicker
-                  {...field}
-                  readOnly={readOnly}
-                  disabled={readOnly || isSubmitting}
-                  label="Date of Joining"
-                  placeholder="Select Date of Joining"
-                  selected={selected}
-                  dateFormat="dd-MM-yyyy"
-                  error={errors?.DOJ?.message}
-                  onChange={(date) => field.onChange(date)}
-                />
-              );
-            }}
+          {deptId?.value === 4 && (
+            <Listbox
+              label="Staff Group"
+              data={staffGroups}
+              displayField="label"
+              value={watch("groupNo")}
+              onChange={(val) => setValue("groupNo", val)}
+              disabled={readOnly || isSubmitting}
+              placeholder="Select Staff Group"
+              error={errors.groupNo?.message}
+            />
+          )}
+
+          <DatePicker
+            label="Date of Joining"
+            value={DOJ}
+            onChange={(date) => setValue("DOJ", date)}
+            readOnly={readOnly}
+            disabled={readOnly || isSubmitting}
+            dateFormat="yyyy-MM-dd"
+            placeholder="Select Date of Joining"
+            error={errors.DOJ?.message}
           />
+
           {(isEditMode || readOnly) && (
             <>
-              <Controller
-                name="DOR"
-                control={control}
-                render={({ field }) => {
-                  let selected = null;
-                  if (field.value) {
-                    try {
-                      const date = new Date(field.value);
-                      if (!isNaN(date.getTime())) {
-                        selected = date;
-                      }
-                    } catch (e) {
-                      console.error("Invalid date:", field.value, e);
-                    }
-                  }
-
-                  return (
-                    <DatePicker
-                      {...field}
-                      readOnly={readOnly}
-                      disabled={readOnly || isSubmitting}
-                      label="Date of Relieving"
-                      placeholder="Select Date of Relieving"
-                      selected={selected}
-                      dateFormat="dd-MM-yyyy"
-                      error={errors?.DOR?.message}
-                      onChange={(date) => field.onChange(date)}
-                    />
-                  );
-                }}
+              <DatePicker
+                label="Date of Relieving"
+                value={DOR}
+                onChange={(date) => setValue("DOR", date)}
+                readOnly={readOnly}
+                disabled={readOnly || isSubmitting}
+                dateFormat="yyyy-MM-dd"
+                placeholder="Select Date of Relieving"
+                error={errors.DOR?.message}
               />
               <Textarea
                 {...register("resignationReason")}
@@ -338,8 +227,7 @@ export function PersonalInfo({
                 disabled={readOnly || isSubmitting}
                 placeholder="Enter Reason for Relieving"
                 label="Reason for Relieving"
-                error={errors?.resignationReason?.message}
-                className="rounded-lg bg-gray-150 px-3 py-2 placeholder:font-light placeholder:text-gray-600 focus:ring focus:ring-primary-500/50 dark:bg-dark-900 dark:placeholder:text-dark-200"
+                error={errors.resignationReason?.message}
                 component={TextareaAutosize}
                 minRows={3}
                 maxRows={6}
@@ -348,108 +236,43 @@ export function PersonalInfo({
           )}
         </div>
 
-        <h5 className="text-lg font-medium text-gray-800 dark:text-dark-100">
-          Address Information
-        </h5>
+        <h5 className="text-lg font-medium text-gray-800 dark:text-dark-100">Address Information</h5>
 
-        <div className="mt-6 space-y-4">
-          <Textarea
-            {...register("address")}
-            readOnly={readOnly}
-            disabled={readOnly || isSubmitting}
-            placeholder="Enter Address"
-            label="Address"
-            error={errors?.address?.message}
-            className="rounded-lg bg-gray-150 px-3 py-2 placeholder:font-light placeholder:text-gray-600 focus:ring focus:ring-primary-500/50 dark:bg-dark-900 dark:placeholder:text-dark-200"
-            component={TextareaAutosize}
-            minRows={2}
-            maxRows={12}
-          />
-        </div>
+        <Textarea
+          {...register("address")}
+          readOnly={readOnly}
+          disabled={readOnly || isSubmitting}
+          placeholder="Enter Address"
+          label="Address"
+          error={errors.address?.message}
+          component={TextareaAutosize}
+          minRows={2}
+          maxRows={12}
+        />
 
-        <h5 className="text-lg font-medium text-gray-800 dark:text-dark-100">
-          Bank Information
-        </h5>
+        <h5 className="text-lg font-medium text-gray-800 dark:text-dark-100">Bank Information</h5>
 
         <div className="grid gap-4 sm:grid-cols-3">
-          <Input
-            {...register("AccountNumber")}
-            readOnly={readOnly}
-            disabled={readOnly || isSubmitting}
-            label="Account Number"
-            error={errors?.AccountNumber?.message}
-            placeholder="Enter Account Number"
-          />
-          <Input
-            {...register("BankName")}
-            readOnly={readOnly}
-            disabled={readOnly || isSubmitting}
-            label="Bank Name"
-            error={errors?.BankName?.message}
-            placeholder="Enter Bank Name"
-          />
-          <Input
-            {...register("Branch")}
-            readOnly={readOnly}
-            disabled={readOnly || isSubmitting}
-            label="Branch"
-            error={errors?.Branch?.message}
-            placeholder="Enter Branch Name"
-          />
+          <Input {...register("AccountNumber")} readOnly={readOnly} disabled={readOnly || isSubmitting} label="Account Number" error={errors.AccountNumber?.message} placeholder="Enter Account Number" />
+          <Input {...register("BankName")} readOnly={readOnly} disabled={readOnly || isSubmitting} label="Bank Name" error={errors.BankName?.message} placeholder="Enter Bank Name" />
+          <Input {...register("Branch")} readOnly={readOnly} disabled={readOnly || isSubmitting} label="Branch" error={errors.Branch?.message} placeholder="Enter Branch Name" />
         </div>
 
         <div className="grid gap-4 lg:grid-cols-3">
-          <Input
-            {...register("IFSC")}
-            readOnly={readOnly}
-            disabled={readOnly || isSubmitting}
-            label="IFSC"
-            error={errors?.IFSC?.message}
-            placeholder="Enter IFSC"
-          />
-          <Input
-            {...register("Otherinfo")}
-            readOnly={readOnly}
-            disabled={readOnly || isSubmitting}
-            label="Other Info"
-            error={errors?.Otherinfo?.message}
-            placeholder="Enter Additional Info"
-          />
+          <Input {...register("IFSC")} readOnly={readOnly} disabled={readOnly || isSubmitting} label="IFSC" error={errors.IFSC?.message} placeholder="Enter IFSC" />
+          <Input {...register("Otherinfo")} readOnly={readOnly} disabled={readOnly || isSubmitting} label="Other Info" error={errors.Otherinfo?.message} placeholder="Enter Additional Info" />
         </div>
 
-        {!readOnly && (
-          <div className="mt-8 flex justify-end gap-3 rtl:space-x-reverse">
-            <Button
-              type="button"
-              onClick={onSuccess}
-              disabled={isSubmitting}
-              className="min-w-[7rem]"
-            >
-              Cancel
+        <div className="mt-8 flex justify-end gap-3 rtl:space-x-reverse">
+          <Button type="button" onClick={onSuccess} disabled={isSubmitting} className="min-w-[7rem]">
+            Cancel
+          </Button>
+          {!readOnly && (
+            <Button type="submit" color="primary" disabled={isSubmitting} className="min-w-[7rem]">
+              {isSubmitting ? "Processing..." : isEditMode ? "Update Staff" : "Add Staff"}
             </Button>
-            <Button
-              type="submit"
-              color="primary"
-              className="min-w-[7rem]"
-              loading={isSubmitting}
-              disabled={isSubmitting}
-            >
-              {isEditMode ? "Update Staff" : "Add Staff"}
-            </Button>
-          </div>
-        )}
-        {readOnly && (
-          <div className="mt-8 flex justify-end gap-3 rtl:space-x-reverse">
-            <Button
-              type="button"
-              onClick={onSuccess}
-              disabled={isSubmitting}
-              className="min-w-[7rem]"
-            >
-              Cancel
-            </Button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </form>
   );
