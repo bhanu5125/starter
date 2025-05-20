@@ -1,3 +1,4 @@
+// index.js
 import { Page } from "components/shared/Page";
 import { KYCFormProvider } from "./KYCFormProvider";
 import { PersonalInfo } from "./PersonalInfo";
@@ -5,9 +6,10 @@ import { useNavigate } from "react-router";
 
 const KYCForm = () => {
   const navigate = useNavigate();
+
   const handleSuccess = () => {
     console.log("Employee added successfully!");
-    navigate("/tables/emp1")
+    navigate("/tables/emp1");
   };
 
   return (
@@ -19,8 +21,8 @@ const KYCForm = () => {
 
         <KYCFormProvider>
           <PersonalInfo
-            isEditMode={false} // Set to false for create mode
-            defaultValues={{}}
+            isEditMode={false}          // create mode
+            defaultValues={{}}          // empty for create
             onSuccess={handleSuccess}
           />
         </KYCFormProvider>
