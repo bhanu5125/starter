@@ -1,14 +1,14 @@
 /* Basic styles */
 html {
-  @apply h-full [--surface-1:--colors-dark-450] [--surface-2:--colors-dark-500] [--surface-3:--colors-dark-600] [-webkit-tap-highlight-color:transparent] [text-rendering:optimizeLegibility];
+  @apply h-full [--surface-1:--colors-light-450] [--surface-2:--colors-light-500] [--surface-3:--colors-light-600] [-webkit-tap-highlight-color:transparent] [text-rendering:optimizeLegibility];
 }
 
 html[data-card-skin="bordered"] {
-  @apply [--surface-1:--colors-dark-500] [--surface-2:--colors-dark-600] [--surface-3:--colors-dark-700];
+  @apply [--surface-1:--colors-light-500] [--surface-2:--colors-light-600] [--surface-3:--colors-light-700];
 }
 
 html.dark {
-  @apply [color-scheme:dark];
+  @apply [color-scheme:light];
 }
 
 body {
