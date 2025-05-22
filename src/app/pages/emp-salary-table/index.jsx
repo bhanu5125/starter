@@ -89,7 +89,7 @@ export default function EmployeesDatatable() {
         department_name: staff.Deptname,
         Salary: staff.Salary || 0,
         Pfon: staff.Pf_ESIon?.data?.[0] || 0,
-        TDS: staff.TDS?.data?.[0] || 0,
+        TDS: staff.TDS,
         Year: staff.Year,
         Month: staff.Month,
         ABRY_Flag: staff.ABRY_Flag || 0,

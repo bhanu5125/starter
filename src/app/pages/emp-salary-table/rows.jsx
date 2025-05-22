@@ -56,7 +56,7 @@ export function TdsInputCell({ getValue, row, column, table }) {
   const value = getValue() || 0;
 
   const handleChange = (e) => {
-    const newValue = parseFloat(e.target.value) || 0;
+    const newValue = e.target.value;
     table.options.meta.updateData(row.index, column.id, newValue);
   };
 
@@ -66,8 +66,6 @@ export function TdsInputCell({ getValue, row, column, table }) {
       value={value} 
       onChange={handleChange}
       type="number"
-      min="0"
-      max="1"
       className="w-20"
     />
   );

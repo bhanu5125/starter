@@ -64,6 +64,7 @@ export default function PayslipReport() {
   const deductionsTotal =
     Number(payslip.ESI) +
     Number(payslip.PF) +
+    Number(payslip.TDS) +
     Number(payslip.ProfTax);
 
   const netAmount = payslip.NetSal;
@@ -233,8 +234,8 @@ export default function PayslipReport() {
             <tr>
               <td className="borderWhite">Overtime</td>
               <td className="tRight borderWhite">{payslip.OTAMOUNT}</td>
-              <td className="borderWhite"></td>
-              <td className="tRight borderWhite"></td>
+              <td className="borderWhite">TDS</td>
+              <td className="tRight borderWhite">{payslip.TDS}</td>
             </tr>
             <tr>
               <td className="borderBlack">Bonus</td>
