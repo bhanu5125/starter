@@ -8,16 +8,8 @@ import { Input, Button, Textarea } from "components/ui";
 import { DatePicker } from "components/shared/form/Datepicker";
 import { Listbox } from "components/shared/form/Listbox";
 import { personalInfoSchema } from "./schema";
-
-const staffGroups = [
-  { label: "1", value: 1 },
-  { label: "2", value: 2 },
-  { label: "3", value: 3 },
-  { label: "4", value: 4 },
-  { label: "5", value: 5 },
-  { label: "6", value: 6 },
-  { label: "7", value: 7 },
-];
+import TextareaAutosize from "react-textarea-autosize";
+import { useNavigate } from "react-router-dom";
 
 const departments = [
   { label: "TRIBE DEVELOPMENT", value: 1 },
@@ -66,18 +58,33 @@ export function PersonalInfo({
   });
 
   useEffect(() => {
-    // Transform defaultValues to match Listbox's expected format
-    const transformedDefaultValues = {
-      ...defaultValues,
-      deptId: departments.find((dept) => dept.value === defaultValues.deptId), // Find the department object
-      isActive: activeStatuses.find(
-        (status) => status.value === defaultValues.isActive,
-      ), // Find the status object
-    };
+  const resolvedDefaults = {
+    ...defaultValues,
+    deptId: departments.find((d) => d.value === defaultValues?.deptId) || null,
+    groupNo: staffGroups.find((g) => g.value === defaultValues?.StaffType) || null,
+    DOJ: defaultValues?.DOJ ? new Date(defaultValues.DOJ) : null,
+    DOR: defaultValues?.DOR ? new Date(defaultValues.DOR) : null,
+  };
+  reset(resolvedDefaults);
+  /*
+  console.log("Default Values:", defaultValues);
+  console.log("Resolved Defaults on Reset:", resolvedDefaults);
+  console.log(defaultValues.DOJ);
+  console.log(resolvedDefaults.DOJ);
+  */
+}, [defaultValues, reset]);
 
-    // Reset the form with transformed values
-    reset(transformedDefaultValues);
-  }, [defaultValues, reset]);
+  const navigate = useNavigate();
+
+  function formatDate(dateString) {
+  if (!dateString) return null;
+  const date = new Date(dateString);
+  return date.toISOString().split('T')[0];
+}
+
+  const deptId = watch("deptId");
+  const DOJ = watch("DOJ");
+  const DOR = watch("DOR");
 
   const onSubmit = async (data) => {
     try {
@@ -258,24 +265,13 @@ export function PersonalInfo({
           <Input {...register("Otherinfo")} readOnly={readOnly} disabled={readOnly || isSubmitting} label="Other Info" error={errors.Otherinfo?.message} placeholder="Enter Additional Info" />
         </div>
 
-        {!readOnly && (
-          <div className="mt-8 flex justify-end gap-3 rtl:space-x-reverse">
-            <Button
-              type="button"
-              onClick={onSuccess}
-              disabled={isSubmitting}
-              className="min-w-[7rem]"
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              color="primary"
-              className="min-w-[7rem]"
-              loading={isSubmitting}
-              disabled={isSubmitting}
-            >
-              {isEditMode ? "Update Staff" : "Add Staff"}
+        <div className="mt-8 flex justify-end gap-3 rtl:space-x-reverse">
+          <Button type="button" onClick={() => { navigate("/tables/emp1"); }} disabled={isSubmitting} className="min-w-[7rem]">
+            Cancel
+          </Button>
+          {!readOnly && (
+            <Button type="submit" color="primary" disabled={isSubmitting} className="min-w-[7rem]">
+              {isSubmitting ? "Processing..." : isEditMode ? "Update Staff" : "Add Staff"}
             </Button>
           )}
         </div>
