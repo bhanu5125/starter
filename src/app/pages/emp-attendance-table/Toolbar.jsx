@@ -167,16 +167,19 @@ export function Toolbar({
     try {
       // Prepare the records to save
       const records = employees.map((emp) => {
-        const isAbsent = emp.attendance === true;
+        const isAbsent = emp.attendance;
         const otHours = emp.ot || 0;
+        const bonus = emp.bonus || 0;
 
         return {
           staffId: emp.employee_id,
           date: `${selectedYear}-${String(selectedMonth).padStart(2, "0")}-${String(selectedDate).padStart(2, "0")}`,
-          status: isAbsent ? "absent" : "present",
+          status: isAbsent,
           ot: parseFloat(otHours) || 0,
+          bonus: bonus,
         };
       });
+      console.log("Attendance records to save:", records);
 
       if (records.length === 0) {
         alert("No attendance records to save.");

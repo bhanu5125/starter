@@ -68,7 +68,7 @@ export default function EmployeesDatatable() {
         attendance: staff.attendance,
         year: staff.Year,
         ot: staff.ot,
-        bonus: staff.Bonus,
+        bonus: staff.bonus,
       }));
   
       // Update both original and filtered data

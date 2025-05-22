@@ -4,6 +4,7 @@ import PropTypes from "prop-types";
 import { Avatar } from "components/ui";
 import { useLocaleContext } from "app/contexts/locale/context";
 import { Input, Checkbox } from "components/ui";
+import { useState } from "react";
 
 // ----------------------------------------------------------------------
 
@@ -31,24 +32,26 @@ export function SalaryInputCell({ getValue, row, column, table }) {
   );
 }
 
-export function PfEsiInputCell({ getValue, row, column, table }) {
-  const value = getValue() || 0;
+export function PfEsiInputCell({ getValue, row }) {
+  const esiValue = getValue(); // 1 = checked, 0 = unchecked
 
-  const handleChange = (e) => {
-    const newValue = parseFloat(e.target.value) || 0;
-    table.options.meta.updateData(row.index, column.id, newValue);
+  const [checked, setChecked] = useState(esiValue === 1);
+
+  const handleChange = () => {
+    const newChecked = !checked;
+    setChecked(newChecked);
+    row.original.Pfon = newChecked ? 1 : 0; 
+    // Update the data directly in row.original (just like CheckCell does)
   };
 
   return (
-    <Input 
-      size="6" 
-      value={value} 
-      onChange={handleChange}
-      type="number"
-      min="0"
-      max="1"
-      className="w-20"
-    />
+    <div className="flex justify-center">
+      <Checkbox 
+        checked={checked}
+        onChange={handleChange}
+        title={checked ? 1 : 0}
+      />
+    </div>
   );
 }
 

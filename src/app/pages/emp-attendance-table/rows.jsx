@@ -43,23 +43,22 @@ export function OTCell({ getValue, row }) {
   );
 }
 
-export function InputCell({ getValue, row, field }) {
-  const [inputValue, setInputValue] = React.useState(getValue() || 0);
+export function InputCell({ getValue, row, column, table }) {
+  const value = parseFloat(getValue());
 
   const handleChange = (e) => {
-    const newVal = Number(e.target.value);
-    setInputValue(newVal);
-    row.original[field] = newVal; // field will be "bonus" etc
+    const newValue = parseFloat(e.target.value);
+    table.options.meta.updateData(row.index, column.id, newValue);
   };
 
   return (
     <Input 
-      size="small"
+      size="6" 
+      value={value} 
+      onChange={handleChange}
       type="number"
       min="0"
-      value={inputValue}
-      onChange={handleChange}
-      className={field === "bonus" ? "w-24" : "w-16"}
+      className="w-24"
     />
   );
 }
@@ -67,13 +66,13 @@ export function InputCell({ getValue, row, field }) {
 export function CheckCell({ getValue, row }) {
   const attendanceStatus = getValue();  // boolean: true = absent, false = present
 
-  const [checked, setChecked] = React.useState(!attendanceStatus); 
+  const [checked, setChecked] = React.useState(attendanceStatus); 
   // checked = present → true, unchecked = absent → false
 
   const handleChange = () => {
     const newChecked = !checked;
     setChecked(newChecked);
-    row.original.attendance = !newChecked; 
+    row.original.attendance = newChecked; 
     // If checked (present), attendance = false (not absent)
     // If unchecked (absent), attendance = true (absent)
   };

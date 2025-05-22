@@ -56,7 +56,7 @@ const baseColumns = [
     cell: CheckCell,
   }),
   columnHelper.accessor("ot", {
-    header: "OT (Hours)",
+    header: "OT (In Days)",
     cell: OTCell,
   }),
 ];
@@ -65,7 +65,7 @@ const baseColumns = [
 const bonusColumn = isAdmin
   ? columnHelper.accessor("bonus", {
       header: "Bonus",
-      cell: (props) => <InputCell {...props} field="bonus" />,
+      cell: InputCell,
     })
   : null;
 
