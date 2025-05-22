@@ -60,6 +60,17 @@ export default function UserTable() {
           ))}
         </TBody>
       </Table>
+      <div className="p-5 flex items-center justify-self-center space-x-3 rtl:space-x-reverse">
+        <Button
+          type="button"
+          className="min-w-[7rem]"
+          onClick={() => {
+            navigate("/dashboards/administration");
+          }}
+        >
+          Back
+        </Button>
+      </div>
     </div>
     </Page>
   );

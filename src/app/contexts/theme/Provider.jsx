@@ -23,7 +23,7 @@ const initialState = {
   resetTheme: () => {},
 };
 
-const COLOR_SCHEME_QUERY = "(prefers-color-scheme: dark)";
+const COLOR_SCHEME_QUERY = "(prefers-color-scheme: light)";
 
 const _html = document?.documentElement;
 

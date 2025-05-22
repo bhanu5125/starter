@@ -11,47 +11,35 @@ const initialState = {
       guardian: "",
       primaryPhone: "",
       secondaryPhone: "",
-      Aadhaar: "", 
-      deptId: null, 
-      isActive: true,
-      DOJ: null, 
-      DOR: null,         
-      address: "",          // New attribute for address
-      AccountNumber: "",    // New attribute for account number
-      BankName: "",         // New attribute for bank name
-      Branch: "",           // New attribute for branch name
-      IFSC: "",             // New attribute for IFSC code
-      Otherinfo: "",        // New attribute for other information
-    },
-    addressInfo: {
-      address: "",
-    },
-    additionalInfo: {
-      isActive: true,
-      staffType: null,
+      Aadhaar: "",
       deptId: null,
+      isActive: true,
+      DOJ: null,
+      DOR: null,
+      address: "",
+      AccountNumber: "",
+      BankName: "",
+      Branch: "",
+      IFSC: "",
+      Otherinfo: "",
+      resignationReason: "",
+      groupNo: null,
+      code: "",
+      StaffType: null,
     },
-    declaration: {
-      agreed: false,
-    },
+    addressInfo: { address: "" },
+    additionalInfo: { isActive: true, staffType: null, deptId: null },
+    declaration: { agreed: false },
   },
   stepStatus: {
-    personalInfo: {
-      isDone: false,
-    },
-    addressInfo: {
-      isDone: false,
-    },
-    additionalInfo: {
-      isDone: false,
-    },
-    declaration: {
-      isDone: false,
-    },
+    personalInfo: { isDone: false },
+    addressInfo: { isDone: false },
+    additionalInfo: { isDone: false },
+    declaration: { isDone: false },
   },
 };
 
-const reducer = (state, action) => {
+function reducer(state, action) {
   switch (action.type) {
     case "SET_FORM_DATA":
       return {
@@ -72,13 +60,15 @@ const reducer = (state, action) => {
     default:
       return state;
   }
-};
+}
 
 export function KYCFormProvider({ children }) {
   const [state, dispatch] = useReducer(reducer, initialState);
   const value = { state, dispatch };
   return (
-    <KYCFormContextProvider value={value}>{children}</KYCFormContextProvider>
+    <KYCFormContextProvider value={value}>
+      {children}
+    </KYCFormContextProvider>
   );
 }
 

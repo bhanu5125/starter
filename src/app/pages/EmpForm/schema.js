@@ -15,10 +15,6 @@ export const personalInfoSchema = Yup.object().shape({
     label: Yup.string().required(),
     value: Yup.number().required(),
   }),
-  isActive: Yup.object().shape({
-    label: Yup.string().required(),
-    value: Yup.number().required(),
-  }),
   address: Yup.string().trim().required("Address is required"),
   AccountNumber: Yup.string().trim().required("Account Number is required"),
   BankName: Yup.string().trim().required("Bank Name is required"),

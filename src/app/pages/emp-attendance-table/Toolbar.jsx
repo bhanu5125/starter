@@ -8,6 +8,8 @@ import { useBreakpointsContext } from "app/contexts/breakpoint/context";
 import { Listbox } from "components/shared/form/Listbox";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router";
+
 
 // Month names with correct values matching backend expectation (01-12)
 const monthNames = [
@@ -34,6 +36,7 @@ export function Toolbar({
 }) {
   const { isXs } = useBreakpointsContext();
   const isFullScreenEnabled = table.getState().tableSettings.enableFullScreen;
+  const navigate = useNavigate();
 
   // Check admin status.
   const isAdmin = localStorage.getItem("isSecretKeyVerified") === "true";
@@ -233,11 +236,6 @@ export function Toolbar({
               isFullScreenEnabled ? "px-4 sm:px-5" : "px-[--margin-x]",
             )}
           >
-            <SearchInput
-              value={searchTerm}
-              onChange={handleSearchChange}
-              onKeyPress={handleKeyPress}
-            />
             <TableConfig table={table} />
           </div>
           <div
@@ -304,11 +302,6 @@ export function Toolbar({
           )}
         >
           <div className="flex items-center gap-4">
-            <SearchInput
-              value={searchTerm}
-              onChange={handleSearchChange}
-              onKeyPress={handleKeyPress}
-            />
             <Filters
               employees={employees}
               setEmployees={setEmployees}
@@ -352,10 +345,11 @@ export function Toolbar({
             <Button
               type="button"
               className="min-w-[7rem]"
-              variant="outlined"
-              onClick={handleResetFilters}
+              onClick={() => {
+                navigate("/dashboards/home");
+              }}
             >
-              Reset
+              Back
             </Button>
           </div>
         </div>

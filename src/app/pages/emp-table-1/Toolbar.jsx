@@ -85,6 +85,15 @@ export function Toolbar({
               >
                 Add Staff
               </Button>
+              <Button
+              type="button"
+              className="min-w-[7rem]"
+              onClick={() => {
+                navigate("/dashboards/home");
+              }}
+            >
+              Back
+            </Button>
             </div>
           </div>
         </>
@@ -112,6 +121,15 @@ export function Toolbar({
               onClick={() => navigate("/forms/emp1")}
             >
               Add Staff
+            </Button>
+            <Button
+              type="button"
+              className="min-w-[7rem]"
+              onClick={() => {
+                navigate("/dashboards/home");
+              }}
+            >
+              Back
             </Button>
           </div>
         </div>

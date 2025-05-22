@@ -7,6 +7,7 @@ import { TableConfig } from "./TableConfig";
 import { useBreakpointsContext } from "app/contexts/breakpoint/context";
 import { Listbox } from "components/shared/form/Listbox";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export function Toolbar({ 
   table, 
@@ -20,6 +21,7 @@ export function Toolbar({
 }) {
   const { isXs } = useBreakpointsContext();
   const isFullScreenEnabled = table?.getState()?.tableSettings?.enableFullScreen || false;
+  const navigate = useNavigate();
   
   const [selectedDepartment, setSelectedDepartment] = useState("All");
 
@@ -64,15 +66,7 @@ export function Toolbar({
       </div>
 
       {isXs ? (
-        <>
-          <div className={clsx(
-            "flex space-x-2 pt-4 rtl:space-x-reverse [&_.input-root]:flex-1", 
-            isFullScreenEnabled ? "px-4 sm:px-5" : "px-[--margin-x]"
-          )}>
-            <SearchInput table={table} />
-            <TableConfig table={table} />
-          </div>
-          
+        <>          
           <div className={clsx(
             "hide-scrollbar flex shrink-0 space-x-2 overflow-x-auto pb-1 pt-4 rtl:space-x-reverse",
             isFullScreenEnabled ? "px-4 sm:px-5" : "px-[--margin-x]"
@@ -106,15 +100,15 @@ export function Toolbar({
               >
                 {isSaving ? 'Saving...' : 'Save'}
               </Button>
-              <Button 
-                type="button"
-                className="min-w-[7rem]" 
-                color="" 
-                variant="outlined"
-                onClick={handleResetClick}
-              >
-                Reset
-              </Button>
+              <Button
+              type="button"
+              className="min-w-[7rem]"
+              onClick={() => {
+                navigate("/dashboards/administration");
+              }}
+            >
+              Back
+            </Button>
             </div>
           </div>
         </>
@@ -152,14 +146,14 @@ export function Toolbar({
             >
               {isSaving ? 'Saving...' : 'Save'}
             </Button>
-            <Button 
+            <Button
               type="button"
-              className="min-w-[7rem]" 
-              color="" 
-              variant="outlined"
-              onClick={handleResetClick}
+              className="min-w-[7rem]"
+              onClick={() => {
+                navigate("/dashboards/administration");
+              }}
             >
-              Reset
+              Back
             </Button>
           </div>
         </div>

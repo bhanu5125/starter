@@ -8,6 +8,7 @@ import { useBreakpointsContext } from "app/contexts/breakpoint/context";
 import { Listbox } from "components/shared/form/Listbox";
 import { useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const monthNames = [
   { label: "January", value: 1 },
@@ -36,6 +37,7 @@ const departmentOptions = [
 export function Toolbar({ table, setEmployees, fetchEmployees }) {
   const { isXs } = useBreakpointsContext();
   const isFullScreenEnabled = table.getState().tableSettings.enableFullScreen;
+  const navigate = useNavigate();
 
   const currentDate = new Date();
   const currentYear = currentDate.getFullYear();
@@ -144,15 +146,6 @@ export function Toolbar({ table, setEmployees, fetchEmployees }) {
         <>
           <div
             className={clsx(
-              "flex space-x-2 pt-4 rtl:space-x-reverse",
-              isFullScreenEnabled ? "px-4 sm:px-5" : "px-[--margin-x]",
-            )}
-          >
-            <SearchInput table={table} />
-            <TableConfig table={table} />
-          </div>
-          <div
-            className={clsx(
               "hide-scrollbar flex shrink-0 space-x-2 overflow-x-auto pb-1 pt-4 rtl:space-x-reverse",
               isFullScreenEnabled ? "px-4 sm:px-5" : "px-[--margin-x]",
             )}
@@ -187,6 +180,15 @@ export function Toolbar({ table, setEmployees, fetchEmployees }) {
               >
                 Export for Bank
               </Button>
+              <Button
+              type="button"
+              className="min-w-[7rem]"
+              onClick={() => {
+                navigate("/dashboards/payroll");
+              }}
+            >
+              Back
+            </Button>
             </div>
           </div>
         </>
@@ -227,6 +229,15 @@ export function Toolbar({ table, setEmployees, fetchEmployees }) {
               >
                 Export for Bank
               </Button>
+              <Button
+              type="button"
+              className="min-w-[7rem]"
+              onClick={() => {
+                navigate("/dashboards/payroll");
+              }}
+            >
+              Back
+            </Button>
           </div>
         </div>
       )}
