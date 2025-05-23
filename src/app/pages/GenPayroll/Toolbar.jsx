@@ -46,6 +46,7 @@ export function Toolbar({ table, setEmployees, fetchEmployees }) {
   const [selectedDepartment, setSelectedDepartment] = useState(0);
   const [selectedYear, setSelectedYear] = useState(currentYear);
   const [selectedMonth, setSelectedMonth] = useState(currentMonth);
+  const [pEval, setPEval] = useState(1);
 
   const years = Array.from({ length: 31 }, (_, i) => ({
     label: (2010 + i).toString(),
@@ -64,10 +65,14 @@ export function Toolbar({ table, setEmployees, fetchEmployees }) {
     setSelectedMonth(selectedOption?.value || currentMonth);
   };
 
+  const handlePEvalChange = (selectedOption) => {
+    setPEval(selectedOption?.value ?? 1);
+  };
+
   const handleGenerateClick = async () => {
     try {
       // Call the API with the current filter values (pPEVal is set to 0 here)
-      await fetchEmployees(selectedDepartment, selectedYear, selectedMonth, 0);
+      await fetchEmployees(selectedDepartment, selectedYear, selectedMonth, pEval);
     } catch (error) {
       console.error("Error fetching employees:", error);
     }
@@ -78,6 +83,7 @@ export function Toolbar({ table, setEmployees, fetchEmployees }) {
       deptId: selectedDepartment,
       year: selectedYear,
       month: selectedMonth,
+      pPEVal: pEval,
     });
   
     try {
@@ -154,9 +160,11 @@ export function Toolbar({ table, setEmployees, fetchEmployees }) {
               selectedDepartment={selectedDepartment}
               selectedYear={selectedYear}
               selectedMonth={selectedMonth}
+              pEval={pEval}
               handleDepartmentChange={handleDepartmentChange}
               handleYearChange={handleYearChange}
               handleMonthChange={handleMonthChange}
+              handlePEvalChange={handlePEvalChange}
               handleGenerateClick={handleGenerateClick}
               years={years}
               months={monthNames}
@@ -203,9 +211,11 @@ export function Toolbar({ table, setEmployees, fetchEmployees }) {
             selectedDepartment={selectedDepartment}
             selectedYear={selectedYear}
             selectedMonth={selectedMonth}
+            pEval={pEval}
             handleDepartmentChange={handleDepartmentChange}
             handleYearChange={handleYearChange}
             handleMonthChange={handleMonthChange}
+            handlePEvalChange={handlePEvalChange}
             handleGenerateClick={handleGenerateClick}
             years={years}
             months={monthNames}
@@ -263,14 +273,17 @@ const Filters = ({
   selectedDepartment,
   selectedYear,
   selectedMonth,
+  pEval,
   handleDepartmentChange,
   handleYearChange,
   handleMonthChange,
+  handlePEvalChange,
   handleGenerateClick,
   years,
   months,
   departments,
 }) => {
+
   return (
     <div className="flex items-center gap-4 p-2">
       <Listbox
@@ -297,6 +310,21 @@ const Filters = ({
         onChange={handleMonthChange}
         displayField="label"
       />
+      <Listbox
+        style={{ minWidth: "150px", maxWidth: "200px", width: "100%" }}
+        data={[
+          { label: "PF(ON)", value: 1 },
+          { label: "PF(OFF)", value: 0 },
+        ]}
+        value={[
+          { label: "PF(ON)", value: 1 },
+          { label: "PF(OFF)", value: 0 },
+        ].find((item) => item.value === pEval)}
+        placeholder="Select pEval"
+        onChange={handlePEvalChange}
+        displayField="label"
+      />
+
       <div className="flex gap-2">
         <Button
           className="rounded-md px-4 py-2 text-white"
