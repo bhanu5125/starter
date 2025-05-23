@@ -143,13 +143,9 @@ export function Toolbar({
 
   const handleGenerateClick = async () => {
     const dateStr = `${selectedYear}-${selectedMonth}-${selectedDate}`;
-    
-    // Reset all filters immediately
-    setSearchTerm("");
-    setSelectedDepartment("");
-    
-    // Force parent component refresh
-    await fetchAttendanceData(dateStr);
+    const deptId = selectedDepartment || "";
+
+    await fetchAttendanceData(dateStr, deptId);
   };
 
   const handleFilterClick = () => {
@@ -264,18 +260,8 @@ export function Toolbar({
               months={monthNames}
               dates={dates}
               isAdmin={isAdmin}
-              handleResetFilters={handleResetFilters}
             />
             <div className="flex items-center space-x-3">
-              <Button
-                type="button"
-                className="min-w-[7rem]"
-                color="primary"
-                variant="outlined"
-                onClick={handleFilterClick}
-              >
-                Filter
-              </Button>
               <Button
                 type="button"
                 className="min-w-[7rem]"
@@ -287,13 +273,14 @@ export function Toolbar({
                 {isSaving ? "Saving..." : "Save"}
               </Button>
               <Button
-                type="button"
-                className="min-w-[7rem]"
-                variant="outlined"
-                onClick={handleResetFilters}
-              >
-                Reset
-              </Button>
+              type="button"
+              className="min-w-[7rem]"
+              onClick={() => {
+                navigate("/dashboards/home");
+              }}
+            >
+              Back
+            </Button>
             </div>
           </div>
         </>
@@ -322,17 +309,7 @@ export function Toolbar({
               months={monthNames}
               dates={dates}
               isAdmin={isAdmin}
-              handleResetFilters={handleResetFilters}
             />
-            <Button
-              type="button"
-              className="min-w-[7rem]"
-              color="primary"
-              variant="outlined"
-              onClick={handleFilterClick}
-            >
-              Filter
-            </Button>
           </div>
           <div className="flex items-center space-x-3">
             <Button
@@ -395,11 +372,11 @@ const Filters = ({
 }) => {
   const departments = [
     { label: "All", value: "" },
-    { label: "TRIBE DEVELOPMENT", value: "TRIBE DEVELOPMENT" },
-    { label: "TRIBE DESIGN", value: "TRIBE DESIGN" },
-    { label: "TSS ADMIN", value: "TSS ADMIN" },
-    { label: "TSS DATA ENTRY", value: "TSS DATA ENTRY" },
-    { label: "HTPL", value: "HTPL" },
+    { label: "TRIBE DEVELOPMENT", value: 1 },
+    { label: "TRIBE DESIGN", value: 2 },
+    { label: "TSS ADMIN", value: 3 },
+    { label: "TSS DATA ENTRY", value: 4 },
+    { label: "HTPL", value: 5 },
   ];
   const [isLoading, setIsLoading] = useState(false);
   return (
@@ -407,9 +384,9 @@ const Filters = ({
       <Listbox
         style={{ minWidth: "180px", maxWidth: "250px", width: "100%" }}
         data={departments}
-        value={departments.find((d) => d.value === selectedDepartment) || null}
-        placeholder="Select Department"
+        value={departments.find(d => d.value === selectedDepartment)}
         onChange={handleDepartmentChange}
+        placeholder="Select Department"
         displayField="label"
       />
       <Listbox

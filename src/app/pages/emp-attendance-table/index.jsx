@@ -49,11 +49,11 @@ export default function EmployeesDatatable() {
   const currentMonth = today.slice(5, 7);
   const currentDay = today.slice(8, 10);
 
-  const fetchAttendanceData = async (date) => {
+  const fetchAttendanceData = async (date, deptId) => {
     setIsLoading(true);
     try {
       const resp = await axios.get("https://tms-backend-three.vercel.app/api/attendance", {
-        params: { date }
+        params: { date, deptId },
       });
   
       console.log("Attendance data:", resp.data);
