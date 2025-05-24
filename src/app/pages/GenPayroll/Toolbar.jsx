@@ -46,7 +46,7 @@ export function Toolbar({ table, setEmployees, fetchEmployees }) {
   const [selectedDepartment, setSelectedDepartment] = useState(0);
   const [selectedYear, setSelectedYear] = useState(currentYear);
   const [selectedMonth, setSelectedMonth] = useState(currentMonth);
-  const [pEval, setPEval] = useState(1);
+  const [pEval, setPEval] = useState(2);
 
   const years = Array.from({ length: 31 }, (_, i) => ({
     label: (2010 + i).toString(),
@@ -66,7 +66,7 @@ export function Toolbar({ table, setEmployees, fetchEmployees }) {
   };
 
   const handlePEvalChange = (selectedOption) => {
-    setPEval(selectedOption?.value ?? 1);
+    setPEval(selectedOption?.value ?? 2);
   };
 
   const handleGenerateClick = async () => {
@@ -313,10 +313,12 @@ const Filters = ({
       <Listbox
         style={{ minWidth: "150px", maxWidth: "200px", width: "100%" }}
         data={[
+          { label: "All", value: 2 },
           { label: "PF(ON)", value: 1 },
           { label: "PF(OFF)", value: 0 },
         ]}
         value={[
+          { label: "All", value: 2 },
           { label: "PF(ON)", value: 1 },
           { label: "PF(OFF)", value: 0 },
         ].find((item) => item.value === pEval)}
