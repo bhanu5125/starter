@@ -96,10 +96,6 @@ export const columns = [
     header: "Bonus",
     cell: TextCell,
   }),
-  columnHelper.accessor("PF_ESION", {
-    header: "PF/ESI On",
-    cell: TextCell,
-  }),
   columnHelper.accessor("TDS", {
     header: "TDS",
     cell: TextCell,

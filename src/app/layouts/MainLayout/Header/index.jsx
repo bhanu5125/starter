@@ -54,9 +54,7 @@ export function Header() {
       {/* Right-side container with HomeIcon and Profile side-by-side */}
       <div className="flex items-center gap-4">
         <Link to="/">
-          <p className="py-3 text-lg font-medium uppercase text-blue-500 dark:text-dark-100">
-            Home
-          </p>
+          <HomeIcon className="size-10" />
         </Link>
         <Profile />
       </div>
