@@ -41,9 +41,9 @@ export function ThemeProvider({ children }) {
     notification: { ...initialState.notification },
   });
 
-  const isDark =
+  const isDark = !(
     (settings.themeMode === "system" && isDarkOS) ||
-    settings.themeMode === "dark";
+    settings.themeMode === "dark");
 
   const setThemeMode = (val) => {
     setSettings((settings) => {
