@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 // Import Dependencies
 import PropTypes from "prop-types";
 
@@ -41,9 +42,7 @@ export function ThemeProvider({ children }) {
     notification: { ...initialState.notification },
   });
 
-  const isDark = !(
-    (settings.themeMode === "system" && isDarkOS) ||
-    settings.themeMode === "dark");
+  const isDark = false
 
   const setThemeMode = (val) => {
     setSettings((settings) => {
