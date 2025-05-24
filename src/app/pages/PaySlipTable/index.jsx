@@ -24,7 +24,7 @@ import { PaginationSection } from "components/shared/table/PaginationSection";
 export default function EmployeesDatatable() {
   const [employees, setEmployees] = useState([]);
 
-  const fetchEmployees = async (deptId = 0, year = new Date().getFullYear(), month = (new Date().getMonth() + 1), pPEVal = 0) => {
+  const fetchEmployees = async (deptId = 0, year = new Date().getFullYear(), month = (new Date().getMonth() + 1), pPEVal = 2) => {
     try {
       const response = await axios.get("https://tms-backend-three.vercel.app/api/get-report", {
         params: { deptId, year, month, pPEVal },

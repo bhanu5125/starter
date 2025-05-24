@@ -66,8 +66,8 @@ export function Toolbar({ table, setEmployees, fetchEmployees }) {
 
   const handleGenerateClick = async () => {
     try {
-      // Call the API with the current filter values (pPEVal is set to 0 here)
-      await fetchEmployees(selectedDepartment, selectedYear, selectedMonth, 0);
+      // Call the API with the current filter values (pPEVal is set to 2 here)
+      await fetchEmployees(selectedDepartment, selectedYear, selectedMonth, 2);
     } catch (error) {
       console.error("Error fetching employees:", error);
     }
