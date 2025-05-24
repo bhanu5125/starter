@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 // Import Dependencies
-import { UserCircleIcon } from "@heroicons/react/24/outline";
+import { HomeIcon } from "@heroicons/react/24/outline";
 import clsx from "clsx";
 import LogoType from "assets/logotype.svg?react";
 import Logo from "assets/mainLogo.svg?react";
@@ -42,15 +42,24 @@ export function Header() {
         cardSkin === "shadow" ? "dark:bg-dark-750/80" : "dark:bg-dark-900/80",
       )}
     >
-        <Link to="/">
-        <div className="flex justify-start flex-row gap-2">
+      <Link to="/">
+        <div className="flex flex-row justify-start gap-2">
           <Logo className="size-14" />
-          <p className="text-xl py-3 font-semibold text-orange-500 uppercase dark:text-dark-100">
-          Traffic Counting Management System
+          <p className="py-3 text-xl font-semibold uppercase text-orange-500 dark:text-dark-100">
+            Traffic Counting Management System
           </p>
         </div>
+      </Link>
+
+      {/* Right-side container with HomeIcon and Profile side-by-side */}
+      <div className="flex items-center gap-4">
+        <Link to="/">
+          <p className="py-3 text-lg font-medium uppercase text-blue-500 dark:text-dark-100">
+            Home
+          </p>
         </Link>
-        <Profile/>
+        <Profile />
+      </div>
     </header>
   );
 }
