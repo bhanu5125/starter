@@ -79,7 +79,7 @@ export default function EmployeesDatatable() {
 
   const fetchData = async () => {
     try {
-      const res = await axios.get("http://vps65389.dreamhostps.com:5000/api/get-salary");
+      const res = await axios.get("https://dev.trafficcounting.in/nodejs/api/get-salary");
       const data = res.data.map((staff) => ({
         StaffId: staff.SId,
         SalId: staff.SalId || staff.SId, // Use provided SalId or fallback to SId
@@ -124,11 +124,11 @@ export default function EmployeesDatatable() {
         }))
       };
   
-      const response = await axios.put("http://vps65389.dreamhostps.com:5000/api/update-salaries", payload);
+      const response = await axios.put("https://dev.trafficcounting.in/nodejs/api/update-salaries", payload);
   
       if (response.data.success) {
         // Refresh data after a successful update
-        const refreshed = await axios.get("http://vps65389.dreamhostps.com:5000/api/get-salary");
+        const refreshed = await axios.get("https://dev.trafficcounting.in/nodejs/api/get-salary");
         const data = refreshed.data.map((staff) => ({
           StaffId: staff.SId,
           SalId: staff.SalId || staff.SId, // Again, fallback to SId if SalId is missing

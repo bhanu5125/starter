@@ -23,7 +23,7 @@ export default function PayslipReport() {
       setLoading(false);
     } else {
       axios
-        .get("http://vps65389.dreamhostps.com:5000/api/get-payslip", {
+        .get("https://dev.trafficcounting.in/nodejs/api/get-payslip", {
           params: { staffId: id },
         })
         .then((res) => {

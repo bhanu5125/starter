@@ -26,7 +26,7 @@ export default function EmployeesDatatable() {
 
   const fetchEmployees = async (deptId = 0, year = new Date().getFullYear(), month = (new Date().getMonth() + 1), pPEVal = 2) => {
     try {
-      const response = await axios.get("http://vps65389.dreamhostps.com:5000/api/get-report", {
+      const response = await axios.get("https://dev.trafficcounting.in/nodejs/api/get-report", {
         params: { deptId, year, month, pPEVal },
       });
       console.log("Response data:", response); // Log the response data

@@ -52,7 +52,7 @@ export default function EmployeesDatatable() {
   const fetchAttendanceData = async (date, deptId) => {
     setIsLoading(true);
     try {
-      const resp = await axios.get("http://vps65389.dreamhostps.com:5000/api/attendance", {
+      const resp = await axios.get("https://dev.trafficcounting.in/nodejs/api/attendance", {
         params: { date, deptId },
       });
   

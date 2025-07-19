@@ -23,7 +23,7 @@ export function PersonalInfo({ defaultValues, onSuccess }) {
   const onSubmit = async (data) => {
     try {
       const response = await axios.put(
-        "http://vps65389.dreamhostps.com:5000/api/update-salary-calc/",
+        "https://dev.trafficcounting.in/nodejs/api/update-salary-calc/",
         data
       );
 

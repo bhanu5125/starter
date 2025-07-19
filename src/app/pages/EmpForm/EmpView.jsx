@@ -13,7 +13,7 @@ export default function EmpView() {
     const fetchData = async () => {
       try {
         const { data } = await axios.get(
-          `http://vps65389.dreamhostps.com:5000/api/get-staff/${code}`
+          `https://dev.trafficcounting.in/nodejs/api/get-staff/${code}`
         );
         if (data) {
           const { staff, tblsourcebk } = data;

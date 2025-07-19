@@ -125,8 +125,8 @@ export function PersonalInfo({
       console.log("Form Data:", formData);
 
       const endpoint = isEditMode
-        ? `http://vps65389.dreamhostps.com:5000/api/update-staff/${code}`
-        : "http://vps65389.dreamhostps.com:5000/api/submit-form";
+        ? `https://dev.trafficcounting.in/nodejs/api/update-staff/${code}`
+        : "https://dev.trafficcounting.in/nodejs/api/submit-form";
 
       const method = isEditMode ? "PUT" : "POST";
       const response = await axios({

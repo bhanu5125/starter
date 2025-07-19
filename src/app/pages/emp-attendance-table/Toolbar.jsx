@@ -184,7 +184,7 @@ export function Toolbar({
 
       // Save attendance records
       const response = await axios.post(
-        "http://vps65389.dreamhostps.com:5000/api/attendance",
+        "https://dev.trafficcounting.in/nodejs/api/attendance",
         {
           records,
         },

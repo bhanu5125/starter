@@ -34,7 +34,7 @@ function UserForm() {
   const onSubmit = async (data) => {
     try {
       const response = await axios.post(
-        "http://vps65389.dreamhostps.com:5000/api/update-password",
+        "https://dev.trafficcounting.in/nodejs/api/update-password",
         { password: data.password },
         {
           headers: {
