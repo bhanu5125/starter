@@ -23,7 +23,7 @@ export function PersonalInfo({ defaultValues, onSuccess }) {
   const onSubmit = async (data) => {
     try {
       const response = await axios.put(
-        "https://tms-backend-three.vercel.app/api/update-salary-calc/",
+        "http://vps65389.dreamhostps.com:5000/api/update-salary-calc/",
         data
       );
 

@@ -13,7 +13,7 @@ export default function EmpView() {
     const fetchData = async () => {
       try {
         const { data } = await axios.get(
-          `https://tms-backend-three.vercel.app/api/get-staff/${code}`
+          `http://vps65389.dreamhostps.com:5000/api/get-staff/${code}`
         );
         if (data) {
           const { staff, tblsourcebk } = data;

@@ -52,7 +52,7 @@ export default function EmployeesDatatable() {
   const fetchAttendanceData = async (date, deptId) => {
     setIsLoading(true);
     try {
-      const resp = await axios.get("https://tms-backend-three.vercel.app/api/attendance", {
+      const resp = await axios.get("http://vps65389.dreamhostps.com:5000/api/attendance", {
         params: { date, deptId },
       });
   

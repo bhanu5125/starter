@@ -30,7 +30,7 @@ export default function EmployeesDatatable() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get("https://tms-backend-three.vercel.app/api/getstaff");
+        const response = await axios.get("http://vps65389.dreamhostps.com:5000/api/getstaff");
         const data = response.data.map((staff) => ({
           employee_id: staff.SId,
           code: staff.Code,
