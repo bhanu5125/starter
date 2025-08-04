@@ -21,6 +21,48 @@ export function TextCell({ getValue }) {
   );
 }
 
+export function OTCell({ getValue, row }) {
+  const [value, setValue] = React.useState(getValue() || 0);
+
+  const handleChange = (e) => {
+    const newVal = Number(e.target.value);
+    setValue(newVal);
+    row.original.ot = newVal; // Directly update ot field
+  };
+
+  return (
+    <Input 
+      size="small"
+      type="number"
+      min="0"
+      max="24"
+      value={value}
+      onChange={handleChange}
+      className="w-20"
+    />
+  );
+}
+
+export function InputCell({ getValue, row, column, table }) {
+  const value = parseFloat(getValue());
+
+  const handleChange = (e) => {
+    const newValue = parseFloat(e.target.value);
+    table.options.meta.updateData(row.index, column.id, newValue);
+  };
+
+  return (
+    <Input 
+      size="6" 
+      value={value} 
+      onChange={handleChange}
+      type="number"
+      min="0"
+      className="w-24"
+    />
+  );
+}
+
 export function CheckCell({ getValue, row }) {
   const attendanceStatus = getValue();  // boolean: true = absent, false = present
 
@@ -88,6 +130,8 @@ TextCell.propTypes = { getValue: PropTypes.func };
 EmployeeIdCell.propTypes = { index: PropTypes.number };
 DateCell.propTypes = { getValue: PropTypes.func };
 EmployeeNameCell.propTypes = { row: PropTypes.object, getValue: PropTypes.func };
+InputCell.propTypes = { row: PropTypes.object, getValue: PropTypes.func, field: PropTypes.string };
 DepartmentCell.propTypes = { getValue: PropTypes.func };
 StatusCell.propTypes = { getValue: PropTypes.func };
 CheckCell.propTypes = { getValue: PropTypes.func, row: PropTypes.object };
+OTCell.propTypes = { getValue: PropTypes.func, row: PropTypes.object };

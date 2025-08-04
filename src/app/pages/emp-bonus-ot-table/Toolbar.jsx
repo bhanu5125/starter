@@ -1,3 +1,4 @@
+  // Generate data for selected year, month, and department
 /* eslint-disable no-unused-vars */
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import clsx from "clsx";
@@ -49,43 +50,31 @@ export function Toolbar({
 
   // Initialize state
   const [selectedDepartment, setSelectedDepartment] = useState("");
+  // Restore year and month state
   const [selectedYear, setSelectedYear] = useState(currentYear);
   const [selectedMonth, setSelectedMonth] = useState(currentMonth);
-  const [selectedDate, setSelectedDate] = useState(currentDateValue);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // List of years.
+  // Restore years and months logic
   const years = Array.from({ length: 31 }, (_, i) => ({
     label: (2018 + i).toString(),
     value: (2018 + i).toString(),
   }));
-
-  // Generate dates for the selected month and year.
-  const generateDates = (year, month) => {
-    const daysInMonth = new Date(parseInt(year), parseInt(month), 0).getDate();
-    return Array.from({ length: daysInMonth }, (_, i) => ({
-      label: (i + 1).toString().padStart(2, "0"),
-      value: (i + 1).toString().padStart(2, "0"),
-    }));
+  const months = monthNames;
+  // Restore year and month change handlers
+  const handleYearChange = (selectedOption) => {
+    if (isAdmin && selectedOption) {
+      setSelectedYear(selectedOption.value);
+    }
   };
 
-  const [dates, setDates] = useState(
-    generateDates(selectedYear, selectedMonth),
-  );
-
-  useEffect(() => {
-    // When selectedYear or selectedMonth changes, update the available dates.
-    const newDates = generateDates(selectedYear, selectedMonth);
-    setDates(newDates);
-
-    // If current date is valid for the new month, keep it; otherwise, set to "01"
-    const maxDay = newDates.length;
-    if (parseInt(selectedDate) > maxDay) {
-      setSelectedDate("01");
+  const handleMonthChange = (selectedOption) => {
+    if (isAdmin && selectedOption) {
+      setSelectedMonth(selectedOption.value);
     }
-  }, [selectedYear, selectedMonth, selectedDate]);
+  };
 
   // Function to apply all filters (department and search)
   const applyFilters = () => {
@@ -119,33 +108,14 @@ export function Toolbar({
     setSelectedDepartment(selectedOption?.value || "");
   };
 
-  const handleYearChange = (selectedOption) => {
-    if (isAdmin && selectedOption) {
-      setSelectedYear(selectedOption.value);
-    }
-  };
-
-  const handleMonthChange = (selectedOption) => {
-    if (isAdmin && selectedOption) {
-      setSelectedMonth(selectedOption.value);
-    }
-  };
-
-  const handleDateChange = (selectedOption) => {
-    if (isAdmin && selectedOption) {
-      setSelectedDate(selectedOption.value);
-    }
-  };
+  // Removed year, month, date change handlers
 
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
   };
 
   const handleGenerateClick = async () => {
-    const dateStr = `${selectedYear}-${selectedMonth}-${selectedDate}`;
-    const deptId = selectedDepartment || "";
-
-    await fetchAttendanceData(dateStr, deptId);
+    await fetchAttendanceData(selectedYear, selectedMonth, selectedDepartment || "");
   };
 
   const handleFilterClick = () => {
@@ -161,35 +131,38 @@ export function Toolbar({
 
     setIsSaving(true);
     try {
-      // Prepare the records to save
+      // Prepare the records to save (only ot and bonus)
       const records = employees.map((emp) => {
-        const isAbsent = emp.attendance;
+        const otHours = emp.ot || 0;
+        const bonus = emp.bonus || 0;
         return {
           staffId: emp.employee_id,
-          date: `${selectedYear}-${String(selectedMonth).padStart(2, "0")}-${String(selectedDate).padStart(2, "0")}`,
-          status: isAbsent,
+          year: selectedYear,
+          month: selectedMonth,
+          ot: parseFloat(otHours) || 0,
+          bonus: bonus,
         };
       });
-      console.log("Attendance records to save:", records);
+      console.log("OT/Bonus records to save:", records);
 
       if (records.length === 0) {
-        alert("No attendance records to save.");
+        alert("No records to save.");
         return;
       }
 
-      // Save attendance records
+      // Save OT/Bonus records
       const response = await axios.post(
-        "https://dev.trafficcounting.in/nodejs/api/attendance",
+        "https://dev.trafficcounting.in/nodejs/api/ot-bonus",
         {
           records,
         },
       );
 
       console.log("Save response:", response.data);
-      alert("Attendance data saved successfully!");
+      alert("OT/Bonus data saved successfully!");
     } catch (err) {
-      console.error("Error saving attendance data:", err);
-      alert("Failed to save attendance data. Please try again.");
+      console.error("Error saving OT/Bonus data:", err);
+      alert("Failed to save OT/Bonus data. Please try again.");
     } finally {
       setIsSaving(false);
     }
@@ -218,7 +191,7 @@ export function Toolbar({
       >
         <div className="min-w-0">
           <h2 className="truncate px-2 text-xl font-medium tracking-wide text-gray-800 dark:text-dark-50">
-            Attendance List
+            OT & Bonus List
           </h2>
         </div>
       </div>
@@ -245,15 +218,12 @@ export function Toolbar({
               selectedDepartment={selectedDepartment}
               selectedYear={selectedYear}
               selectedMonth={selectedMonth}
-              selectedDate={selectedDate}
               handleDepartmentChange={handleDepartmentChange}
               handleYearChange={handleYearChange}
               handleMonthChange={handleMonthChange}
-              handleDateChange={handleDateChange}
               handleGenerateClick={handleGenerateClick}
               years={years}
-              months={monthNames}
-              dates={dates}
+              months={months}
               isAdmin={isAdmin}
             />
             <div className="flex items-center space-x-3">
@@ -268,14 +238,14 @@ export function Toolbar({
                 {isSaving ? "Saving..." : "Save"}
               </Button>
               <Button
-              type="button"
-              className="min-w-[7rem]"
-              onClick={() => {
-                navigate("/dashboards/home");
-              }}
-            >
-              Back
-            </Button>
+                type="button"
+                className="min-w-[7rem]"
+                onClick={() => {
+                  navigate("/dashboards/home");
+                }}
+              >
+                Back
+              </Button>
             </div>
           </div>
         </>
@@ -294,15 +264,12 @@ export function Toolbar({
               selectedDepartment={selectedDepartment}
               selectedYear={selectedYear}
               selectedMonth={selectedMonth}
-              selectedDate={selectedDate}
               handleDepartmentChange={handleDepartmentChange}
               handleYearChange={handleYearChange}
               handleMonthChange={handleMonthChange}
-              handleDateChange={handleDateChange}
               handleGenerateClick={handleGenerateClick}
               years={years}
-              months={monthNames}
-              dates={dates}
+              months={months}
               isAdmin={isAdmin}
             />
           </div>
@@ -354,15 +321,12 @@ const Filters = ({
   selectedDepartment,
   selectedYear,
   selectedMonth,
-  selectedDate,
   handleDepartmentChange,
   handleYearChange,
   handleMonthChange,
-  handleDateChange,
   handleGenerateClick,
   years,
   months,
-  dates,
   isAdmin,
 }) => {
   const departments = [
@@ -373,7 +337,6 @@ const Filters = ({
     { label: "TSS DATA ENTRY", value: 4 },
     { label: "HTPL", value: 5 },
   ];
-  const [isLoading, setIsLoading] = useState(false);
   return (
     <div className="flex items-center gap-4 p-2">
       <Listbox
@@ -402,24 +365,14 @@ const Filters = ({
         displayField="label"
         disabled={!isAdmin}
       />
-      <Listbox
-        style={{ minWidth: "120px", maxWidth: "150px", width: "100%" }}
-        data={dates}
-        value={dates.find((d) => d.value === selectedDate) || null}
-        placeholder="Select Date"
-        onChange={handleDateChange}
-        displayField="label"
-        disabled={!isAdmin}
-      />
       <Button
         type="button"
         color="primary"
         variant="outlined"
         className="min-w-[7rem]"
         onClick={handleGenerateClick}
-        disabled={isLoading} // Disable while loading
       >
-        {isLoading ? "Generating..." : "Generate"}
+        Generate
       </Button>
     </div>
   );
@@ -446,17 +399,13 @@ Filters.propTypes = {
   selectedDepartment: PropTypes.string,
   selectedYear: PropTypes.string,
   selectedMonth: PropTypes.string,
-  selectedDate: PropTypes.string,
   handleDepartmentChange: PropTypes.func,
   handleYearChange: PropTypes.func,
   handleMonthChange: PropTypes.func,
-  handleDateChange: PropTypes.func,
   handleGenerateClick: PropTypes.func,
   years: PropTypes.array,
   months: PropTypes.array,
-  dates: PropTypes.array,
   isAdmin: PropTypes.bool,
-  handleResetFilters: PropTypes.func,
 };
 
 export default Toolbar;

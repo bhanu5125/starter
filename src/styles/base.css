@@ -31,18 +31,12 @@ body.is-monochrome::before {
   @apply duration-[.25s] ease-in [transition-property:width,padding-left,padding-right,margin-left,margin-right];
 }
 
-/* Remove .is-sidebar-open styles */
-/* .is-sidebar-open .transition-content {
+.is-sidebar-open .transition-content {
   @apply ease-out;
-} */
-
-/* Sidebar Toggle Button - Disable or Hide */
-.sidebar-toggle-btn {
-  @apply hidden; /* Hide the toggle button */
 }
 
-/* Remove active state styles for the toggle button */
-/* .sidebar-toggle-btn span {
+/* Sidebar Toggle Button */
+.sidebar-toggle-btn span {
   @apply h-[2px] w-5 translate-x-0 bg-current transition-all duration-[.25s] ease-in-out;
 }
 
@@ -64,7 +58,7 @@ body.is-monochrome::before {
 
 .sidebar-toggle-btn.active span:nth-child(3) {
   @apply rotate-45 rtl:-rotate-45;
-} */
+}
 
 .min-h-100vh {
   min-height: 100vh;

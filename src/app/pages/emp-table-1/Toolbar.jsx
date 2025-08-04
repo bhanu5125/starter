@@ -18,14 +18,14 @@ import { EllipsisHorizontalIcon } from "@heroicons/react/20/solid";
 import PropTypes from "prop-types";
 // Local Imports
 import { Button, Input } from "components/ui";
-import { Radio, RadioGroup } from "@headlessui/react";
+import { RadioGroup, Radio } from "@headlessui/react";
 import { TableConfig } from "./TableConfig";
 import { useBreakpointsContext } from "app/contexts/breakpoint/context";
 import { departments } from "./data"; // Assuming you have employee status options
 import { employeeStatusOptions } from "./data";
 import { Listbox } from "components/shared/form/Listbox";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 // ----------------------------------------------------------------------
 
@@ -88,9 +88,7 @@ export function Toolbar({
               <Button
               type="button"
               className="min-w-[7rem]"
-              onClick={() => {
-                navigate("/dashboards/home");
-              }}
+              onClick={() => navigate(-1)}
             >
               Back
             </Button>
@@ -160,86 +158,70 @@ const Filters = ({
   setEmployees = () => {},
   originalEmployees = [],
 }) => {
-  const [selectedDepartment, setSelectedDepartment] = useState("All"); // Department filter
-  const [selectedStatus, setSelectedStatus] = useState("Active"); // Status filter (null = "All")
+  const [selectedDepartment, setSelectedDepartment] = useState("All");
+  const [selectedStatus, setSelectedStatus] = useState("Active");
+
+  // Get unique department list from originalEmployees
+  const departmentOptions = [
+    { label: "All", value: "All" },
+    ...Array.from(
+      new Set(originalEmployees.map((emp) => emp.department_name).filter(Boolean))
+    ).map((dept) => ({ label: dept, value: dept })),
+  ];
+
+  // Filter employees automatically when filter changes
+  useEffect(() => {
+    let filtered = originalEmployees;
+    if (selectedDepartment !== "All") {
+      filtered = filtered.filter((emp) => emp.department_name === selectedDepartment);
+    }
+    if (selectedStatus !== "All") {
+      filtered = filtered.filter((emp) => emp.status === selectedStatus);
+    }
+    setEmployees(filtered);
+  }, [selectedDepartment, selectedStatus, originalEmployees, setEmployees]);
 
   // Handle department change
-  const handleDepartmentChange = (selectedOption) => {
-    setSelectedDepartment(selectedOption?.label === "All" ? "" : selectedOption?.label);
+  const handleDepartmentChange = (option) => {
+    setSelectedDepartment(option.value);
   };
 
   // Handle status change
   const handleStatusChange = (value) => {
-    setSelectedStatus(value === null ? null : value); // Handle "All" option
-  };
-
-  // Apply filters when the Generate button is clicked
-  const handleGenerateClick = () => {
-    // Filter the original employees based on the selected department and status
-    const filteredEmployees = originalEmployees.filter((employee) => {
-      // Check department filter
-      const departmentMatch =
-        !selectedDepartment || employee.department_name === selectedDepartment;
-
-      // Check status filter
-      const statusMatch =
-        selectedStatus === null || employee.status === selectedStatus;
-
-      // Include the employee if both filters match
-      return departmentMatch && statusMatch;
-    });
-
-    // Update the employees data with the filtered data
-    setEmployees(filteredEmployees);
+    setSelectedStatus(value);
   };
 
   return (
-    <div className="flex items-center gap-4 p-2">
+    <div className="flex items-center gap-2">
+      {/* Department Listbox */}
       <Listbox
-        style={{ minWidth: "200px", maxWidth: "350px", width: "100%" }}
-        data={departments}
-        value={departments.find((d) => d.label === selectedDepartment) || null}
-        placeholder="Select Department"
+        data={departmentOptions}
+        value={departmentOptions.find((d) => d.value === selectedDepartment)}
         onChange={handleDepartmentChange}
         displayField="label"
+        valueField="value"
+        style={{ minWidth: 160, maxWidth: 240 }}
+        placeholder="Select Department"
       />
-
-      {/* Employee Status - Inline Radio Buttons */}
+      {/* Status RadioGroup */}
       <RadioGroup
         value={selectedStatus}
         onChange={handleStatusChange}
         className="flex gap-3"
-        label="Employee Status"
       >
-        {employeeStatusOptions.map((option) => (
-          <label
-            key={option.label}
-            className="danger flex cursor-pointer items-center gap-2"
-          >
-            <Radio
-              value={option.value} // Use the value from employeeStatusOptions
-              className={({ checked }) =>
-                `h-4 w-4 rounded-full border-2 transition-colors ${
-                  checked
-                    ? "border-blue-500 bg-blue-500" // Selected state
-                    : "border-gray-400 bg-transparent" // Unselected state
-                }`
-              }
+        {['Active', 'InActive', 'All'].map((status) => (
+          <label key={status} className="flex items-center gap-1 cursor-pointer">
+            <input
+              type="radio"
+              value={status}
+              checked={selectedStatus === status}
+              onChange={() => handleStatusChange(status)}
+              className="accent-blue-600"
             />
-            <span className="text-slate-950 ">{option.label}</span>
+            <span>{status}</span>
           </label>
         ))}
       </RadioGroup>
-
-      <div className="flex gap-2">
-        <Button
-          className="rounded-md px-4 py-2 text-white"
-          color="primary"
-          onClick={handleGenerateClick}
-        >
-          Generate
-        </Button>
-      </div>
     </div>
   );
 };

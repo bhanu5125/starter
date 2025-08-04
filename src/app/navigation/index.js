@@ -1,7 +1,7 @@
 import { dashboards } from "./dashboards";
 
 export const navigation = [
-    dashboards,
-]
+    dashboards
+];
 
-export { baseNavigation } from './baseNavigation'
+export { baseNavigation } from './baseNavigation';

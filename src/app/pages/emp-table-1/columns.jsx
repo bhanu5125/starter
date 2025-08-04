@@ -5,7 +5,6 @@ import { RowActions } from "./RowActions";
 import { 
     EmployeeIdCell,
     EmployeeNameCell,
-    DepartmentCell,
     StatusCell,
     TextCell
 } from "./rows";
@@ -36,11 +35,6 @@ export const columns = [
     columnHelper.accessor("status", {
         header: "Status",
         cell: StatusCell,
-    }),
-
-    columnHelper.accessor("department_name", {
-        header: "Department",
-        cell: DepartmentCell,
     }),
 
     columnHelper.display({

@@ -4,7 +4,7 @@ import { Outlet } from "react-router";
 
 // Local Imports
 import { Header } from "./Header";
-//import { Sidebar } from "./Sidebar";
+import { Sidebar } from "./Sidebar";
 
 // ----------------------------------------------------------------------
 
@@ -13,10 +13,11 @@ export default function MainLayout() {
     <>
       <Header />
       <main
-        className={clsx("")}
+        className={clsx("main-content transition-content grid grid-cols-1")}
       >
         <Outlet />
       </main>
+      <Sidebar />
     </>
   );
 }

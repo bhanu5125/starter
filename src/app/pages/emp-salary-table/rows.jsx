@@ -32,24 +32,19 @@ export function SalaryInputCell({ getValue, row, column, table }) {
   );
 }
 
-export function PfEsiInputCell({ getValue, row }) {
-  const esiValue = getValue(); // 1 = checked, 0 = unchecked
-
-  const [checked, setChecked] = useState(esiValue === 1);
+export function PfEsiInputCell({ getValue, row, column, table }) {
+  const value = getValue() === 1;
 
   const handleChange = () => {
-    const newChecked = !checked;
-    setChecked(newChecked);
-    row.original.Pfon = newChecked ? 1 : 0; 
-    // Update the data directly in row.original (just like CheckCell does)
+    table.options.meta.updateData(row.index, column.id, value ? 0 : 1);
   };
 
   return (
     <div className="flex justify-center">
-      <Checkbox 
-        checked={checked}
+      <Checkbox
+        checked={value}
         onChange={handleChange}
-        title={checked ? 1 : 0}
+        title={value ? 1 : 0}
       />
     </div>
   );

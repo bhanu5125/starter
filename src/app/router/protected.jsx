@@ -77,6 +77,12 @@ const protectedRoutes = {
                   }),
                 },
                 {
+                  path: "ot-bonus",
+                  lazy: async () => ({
+                    Component: (await import("app/pages/emp-bonus-ot-table")).default,
+                  }),
+                },
+                {
                   element: <AdminGuard />,
                   children: [
                     {

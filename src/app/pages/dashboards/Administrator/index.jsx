@@ -6,7 +6,8 @@ import {
   UserGroupIcon,
   UserPlusIcon,
   UserIcon,
-  Cog6ToothIcon
+  Cog6ToothIcon,
+  BanknotesIcon
 } from "@heroicons/react/24/outline";
 import clsx from "clsx";
 import { useNavigate } from "react-router-dom";
@@ -20,6 +21,14 @@ const items = [
     description: "Manage Staff Members Salaries",
     isActive: false,
     navigateto: "/tables/salary"
+  },
+  {
+    id: "staff-ot-bonus",
+    Icon: BanknotesIcon,
+    title: "Staff OT & Bonus",
+    description: "Manage Staff Members OT and Bonus",
+    isActive: false,
+    navigateto: "/tables/ot-bonus"
   },
   {
     id: "salary-settings",

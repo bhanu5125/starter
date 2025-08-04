@@ -2,7 +2,6 @@ import { createColumnHelper } from "@tanstack/react-table";
 import {
   EmployeeIdCell,
   EmployeeNameCell,
-  DepartmentCell,
   SalaryInputCell, // Changed from InputCell to SalaryInputCell
   TextCell,
   PfEsiInputCell, // New component for PF/ESI
@@ -28,10 +27,6 @@ export const columns = [
   columnHelper.accessor("surname", {
     header: "Surname",
     cell: EmployeeNameCell,
-  }),
-  columnHelper.accessor("department_name", {
-    header: "Department",
-    cell: DepartmentCell,
   }),
   columnHelper.accessor("Salary", {
     header: "Salary",

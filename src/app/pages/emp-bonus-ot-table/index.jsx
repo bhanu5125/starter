@@ -31,18 +31,18 @@ export default function EmployeesDatatable() {
 
   // Get today's date components
   const today = new Date().toISOString().slice(0, 10);
-  const currentYear = today.slice(0, 4);
-  const currentMonth = today.slice(5, 7);
+  const year = today.slice(0, 4);
+  const month = today.slice(5, 7);
   const currentDay = today.slice(8, 10);
 
-  const fetchAttendanceData = async (date, deptId) => {
+  const fetchAttendanceData = async (year, month, deptId) => {
     setIsLoading(true);
     try {
-      const resp = await axios.get("https://dev.trafficcounting.in/nodejs/api/attendance", {
-        params: { date, deptId },
+      const resp = await axios.get("https://dev.trafficcounting.in/nodejs/api/ot-bonus", {
+        params: { year, month, deptId },
       });
   
-      console.log("Attendance data:", resp.data);
+      console.log("OT & Bonus data:", resp.data);
   
       // Normalize data to match table structure
       const normalizedData = resp.data.map(staff => ({
@@ -51,8 +51,8 @@ export default function EmployeesDatatable() {
         firstname: staff.FIRSTNAME,
         surname: staff.SURNAME,
         department_name: staff.DEPARTMENT,
-        attendance: staff.attendance,
-        year: staff.Year,
+        ot: staff.ot,
+        bonus: staff.bonus,
       }));
   
       // Update both original and filtered data
@@ -110,7 +110,7 @@ export default function EmployeesDatatable() {
   useLockScrollbar(tableSettings.enableFullScreen);
 
   return (
-    <Page title="Attendance Management">
+    <Page title="OT & Bonus Management">
       <div className="transition-content w-full pb-5">
         <div
           className={clsx(

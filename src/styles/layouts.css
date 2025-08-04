@@ -7,20 +7,34 @@
   @apply grid min-h-full [grid-template-rows:auto_1fr];
 }
 
-/* Remove .is-sidebar-open styles */
+[data-layout="main-layout"].is-sidebar-open {
+  @apply xl:[--margin-x:1.5rem];
+}
+
 [data-layout="main-layout"] main.main-content,
 [data-layout="main-layout"] .app-header {
   @apply ltr:md:ml-[--main-panel-width] rtl:md:mr-[--main-panel-width];
 }
 
-/* Ensure prime-panel is always hidden */
+[data-layout="main-layout"].is-sidebar-open main.main-content,
+[data-layout="main-layout"].is-sidebar-open .app-header {
+  @apply ltr:xl:ml-[calc(var(--main-panel-width)+var(--prime-panel-width))] rtl:xl:mr-[calc(var(--main-panel-width)+var(--prime-panel-width))];
+}
+
 [data-layout="main-layout"] .prime-panel {
   @apply invisible fixed top-0 z-30 h-full w-[calc(var(--main-panel-width)+var(--prime-panel-width))] -translate-x-full transform-gpu transition-[transform,visibility] delay-150 duration-[.25s] ease-in md:delay-[unset] ltr:left-0 rtl:right-0 rtl:translate-x-full;
 }
 
-/* Ensure main-panel is always visible */
+[data-layout="main-layout"].is-sidebar-open .prime-panel {
+  @apply visible translate-x-0 ease-out;
+}
+
 [data-layout="main-layout"] .main-panel {
-  @apply visible fixed top-0 z-40 h-full w-[--main-panel-width] shrink-0 transform-gpu transition-[transform,visibility] duration-200 ease-in md:z-[60] ltr:left-0 rtl:right-0;
+  @apply invisible fixed top-0 z-40 h-full w-[--main-panel-width] shrink-0 -translate-x-full transform-gpu transition-[transform,visibility] duration-200 ease-in md:visible md:z-[60] md:translate-x-0 ltr:left-0 rtl:right-0 rtl:translate-x-full rtl:md:translate-x-0;
+}
+
+[data-layout="main-layout"].is-sidebar-open .main-panel {
+  @apply visible translate-x-0;
 }
 
 /* Sideblock Layout Styles */

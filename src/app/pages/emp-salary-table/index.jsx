@@ -105,6 +105,7 @@ export default function EmployeesDatatable() {
   const handleSave = async () => {
     setIsSaving(true);
     setSaveError(null);
+    
   
     try {
       if (employees.length === 0) {

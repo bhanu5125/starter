@@ -9,6 +9,7 @@ import { Link } from "react-router";
 // Local Imports
 import { Profile } from "../Profile";
 import { useThemeContext } from "app/contexts/theme/context";
+import { SidebarToggleBtn } from "components/shared/SidebarToggleBtn";
 
 // ----------------------------------------------------------------------
 
@@ -42,14 +43,18 @@ export function Header() {
         cardSkin === "shadow" ? "dark:bg-dark-750/80" : "dark:bg-dark-900/80",
       )}
     >
-      <Link to="/">
-        <div className="flex flex-row justify-start gap-2">
-          <Logo className="size-14" />
-          <p className="py-3 text-xl font-semibold uppercase text-orange-500 dark:text-dark-100">
-            Traffic Counting Management System
-          </p>
-        </div>
-      </Link>
+      <SidebarToggleBtn />
+      
+      <div className="flex items-center gap-4">
+        <Link to="/">
+          <div className="flex flex-row justify-start gap-2">
+            <Logo className="size-14" />
+            <p className="py-3 text-xl font-semibold uppercase text-orange-500 dark:text-dark-100">
+              Traffic Counting Management System
+            </p>
+          </div>
+        </Link>
+      </div>
 
       {/* Right-side container with HomeIcon and Profile side-by-side */}
       <div className="flex items-center gap-4">
