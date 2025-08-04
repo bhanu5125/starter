@@ -11,7 +11,7 @@ import { Button } from "components/ui";
 import { Menu } from "./Menu";
 import { getNavigation } from "app/navigation";
 import { useEffect, useState } from "react";
-import Logo from 'assets/mainLogo.svg';
+import Logo from "assets/mainLogo.svg?react";
 
 // ----------------------------------------------------------------------
 
