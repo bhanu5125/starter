@@ -1,7 +1,12 @@
-import { dashboards } from "./dashboards";
+import { getDashboards } from "./dashboards";
+import { isAuthenticated } from 'utils/auth';
 
-export const navigation = [
-    dashboards
-];
+// This function will be called whenever the navigation is needed
+export const getNavigation = () => {
+    if (!isAuthenticated()) {
+        return [];
+    }
+    return getDashboards();
+};
 
 export { baseNavigation } from './baseNavigation';

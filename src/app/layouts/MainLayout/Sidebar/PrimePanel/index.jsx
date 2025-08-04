@@ -9,7 +9,9 @@ import { useTranslation } from "react-i18next";
 import { useThemeContext } from "app/contexts/theme/context";
 import { Button } from "components/ui";
 import { Menu } from "./Menu";
-import { navigation } from "app/navigation";
+import { getNavigation } from "app/navigation";
+import { useEffect, useState } from "react";
+import Logo from 'assets/mainLogo.svg';
 
 // ----------------------------------------------------------------------
 
@@ -17,11 +19,27 @@ export function PrimePanel({
   currentSegment,
   pathname,
   close,
+  
 }) {
+  const [navigation, setNavigation] = useState([]);
+
+  // Update navigation when auth state changes
+  useEffect(() => {
+    // This will cause a re-render when auth state changes
+    setNavigation(getNavigation());
+    
+    // Listen for auth state changes
+    const handleAuthChange = () => {
+      setNavigation(getNavigation());
+    };
+    
+    window.addEventListener('storage', handleAuthChange);
+    return () => {
+      window.removeEventListener('storage', handleAuthChange);
+    };
+  }, []);
   const { cardSkin } = useThemeContext();
   const { t } = useTranslation();
-
-  const title = t(currentSegment?.transKey) || currentSegment?.title;
 
   return (
     <div
@@ -38,10 +56,10 @@ export function PrimePanel({
           cardSkin === "shadow" ? "dark:bg-dark-750" : "dark:bg-dark-900",
         )}
       >
-        <div className="relative flex h-16 w-full shrink-0 items-center justify-between pl-4 pr-1 rtl:pl-1 rtl:pr-4">
-          <p className="truncate text-base tracking-wider text-gray-800 dark:text-dark-100">
-            {title || 'Menu'}
-          </p>
+        <div className="relative flex h-16 w-full shrink-0 items-center justify-between px-4">
+          <div className="flex items-center">
+            <Logo className="h-8 w-auto" />
+          </div>
           <Button
             onClick={close}
             isIcon
@@ -54,7 +72,6 @@ export function PrimePanel({
         <Menu
           nav={navigation}
           pathname={pathname}
-          title={title}
         />
       </div>
     </div>

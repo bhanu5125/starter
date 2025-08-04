@@ -5,10 +5,11 @@ import { useLocation } from "react-router";
 // Local Imports
 import { useBreakpointsContext } from "app/contexts/breakpoint/context";
 import { useSidebarContext } from "app/contexts/sidebar/context";
-import { navigation } from "app/navigation";
+import { getNavigation } from "app/navigation";
 import { useDidUpdate } from "hooks";
 import { isRouteActive } from "utils/isRouteActive";
 import { PrimePanel } from "./PrimePanel";
+import { useEffect } from "react";
 
 // ----------------------------------------------------------------------
 
@@ -16,10 +17,26 @@ export function Sidebar() {
   const { pathname } = useLocation();
   const { name, lgAndDown } = useBreakpointsContext();
   const { isExpanded, close } = useSidebarContext();
+  const [navigation, setNavigation] = useState([]);
+
+  // Update navigation when auth state changes
+  useEffect(() => {
+    setNavigation(getNavigation());
+    
+    // Listen for auth state changes
+    const handleAuthChange = () => {
+      setNavigation(getNavigation());
+    };
+    
+    window.addEventListener('storage', handleAuthChange);
+    return () => {
+      window.removeEventListener('storage', handleAuthChange);
+    };
+  }, []);
 
   const initialSegment = useMemo(
     () => navigation.find((item) => isRouteActive(item.path, pathname)),
-    [pathname]
+    [pathname, navigation]
   );
 
   const [activeSegmentPath, setActiveSegmentPath] = useState(
@@ -28,7 +45,7 @@ export function Sidebar() {
 
   const currentSegment = useMemo(() => {
     return navigation.find((item) => item.path === activeSegmentPath);
-  }, [activeSegmentPath]);
+  }, [activeSegmentPath, navigation]);
 
   useDidUpdate(() => {
     const activePath = navigation.find((item) =>
