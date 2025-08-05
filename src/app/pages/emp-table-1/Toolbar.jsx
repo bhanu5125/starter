@@ -34,6 +34,7 @@ export function Toolbar({
   employees = [],
   setEmployees = () => {},
   originalEmployees = [],
+  onDepartmentChange = () => {},
 }) {
   const { isXs } = useBreakpointsContext();
   const isFullScreenEnabled = table.getState().tableSettings.enableFullScreen;
@@ -157,9 +158,12 @@ const Filters = ({
   employees = [],
   setEmployees = () => {},
   originalEmployees = [],
+  onDepartmentChange = () => {},
 }) => {
   const [selectedDepartment, setSelectedDepartment] = useState("All");
   const [selectedStatus, setSelectedStatus] = useState("Active");
+  const [selectedStaffType, setSelectedStaffType] = useState("All");
+  const isTSSDepartment = selectedDepartment === "TSS DATA ENTRY";
 
   // Get unique department list from originalEmployees
   const departmentOptions = [
@@ -169,26 +173,55 @@ const Filters = ({
     ).map((dept) => ({ label: dept, value: dept })),
   ];
 
+  // Staff type options
+  const staffTypeOptions = [
+    { label: "All", value: "All" },
+    ...Array.from({ length: 8 }, (_, i) => ({
+      label: `Group ${i}`,
+      value: i, // Store as number
+    })),
+  ];
+
   // Filter employees automatically when filter changes
   useEffect(() => {
     let filtered = originalEmployees;
     if (selectedDepartment !== "All") {
       filtered = filtered.filter((emp) => emp.department_name === selectedDepartment);
+      
+      // Apply staff type filter only for TSS Data Entry department
+      if (isTSSDepartment && selectedStaffType !== "All") {
+        filtered = filtered.filter((emp) => {
+          // Treat null/undefined staff_type as 0
+          const staffType = emp.staff_type ?? 0;
+          return staffType === selectedStaffType;
+        });
+      }
     }
     if (selectedStatus !== "All") {
       filtered = filtered.filter((emp) => emp.status === selectedStatus);
     }
     setEmployees(filtered);
-  }, [selectedDepartment, selectedStatus, originalEmployees, setEmployees]);
+  }, [selectedDepartment, selectedStatus, selectedStaffType, isTSSDepartment, originalEmployees, setEmployees]);
+
+  // Reset staff type when department changes
+  useEffect(() => {
+    setSelectedStaffType("All");
+  }, [selectedDepartment]);
 
   // Handle department change
   const handleDepartmentChange = (option) => {
     setSelectedDepartment(option.value);
+    onDepartmentChange(option.value);
   };
 
   // Handle status change
   const handleStatusChange = (value) => {
     setSelectedStatus(value);
+  };
+
+  // Handle staff type change
+  const handleStaffTypeChange = (option) => {
+    setSelectedStaffType(option.value);
   };
 
   return (
@@ -203,6 +236,19 @@ const Filters = ({
         style={{ minWidth: 160, maxWidth: 240 }}
         placeholder="Select Department"
       />
+      
+      {/* Staff Type Listbox - Only show for TSS Data Entry */}
+      {isTSSDepartment && (
+        <Listbox
+          data={staffTypeOptions}
+          value={staffTypeOptions.find((t) => t.value === selectedStaffType) || staffTypeOptions[0]}
+          onChange={handleStaffTypeChange}
+          displayField="label"
+          valueField="value"
+          style={{ minWidth: 120, maxWidth: 160 }}
+          placeholder="Select Group"
+        />
+      )}
       {/* Status RadioGroup */}
       <RadioGroup
         value={selectedStatus}

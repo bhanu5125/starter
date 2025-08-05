@@ -18,11 +18,12 @@ import { Page } from "components/shared/Page";
 import { useLockScrollbar, useDidUpdate, useLocalStorage } from "hooks";
 import { fuzzyFilter } from "utils/react-table/fuzzyFilter";
 import { Toolbar } from "./Toolbar";
-import { columns } from "./columns";
+import { getColumns, columnOptions } from "./columns";
 import { PaginationSection } from "components/shared/table/PaginationSection";
 
 export default function EmployeesDatatable() {
   const [employees, setEmployees] = useState([]);
+  const [selectedOptionalColumns, setSelectedOptionalColumns] = useState([]);
 
   const fetchEmployees = async (deptId = 0, year = new Date().getFullYear(), month = (new Date().getMonth() + 1), pPEVal = 2) => {
     try {
@@ -51,12 +52,21 @@ export default function EmployeesDatatable() {
   const [globalFilter, setGlobalFilter] = useState("");
   const [sorting, setSorting] = useState([]);
 
-  const [columnVisibility, setColumnVisibility] = useLocalStorage("column-visibility-employees", {});
+  // Initialize column visibility with default columns always visible
+  const [columnVisibility, setColumnVisibility] = useLocalStorage("column-visibility-employees", {
+    SNo: true,
+    Code: true, 
+    Name: true,
+    NetSal: true
+  });
   const [columnPinning, setColumnPinning] = useLocalStorage("column-pinning-employees", {});
+
+  // Get dynamic columns based on selected optional columns
+  const dynamicColumns = getColumns(selectedOptionalColumns);
 
   const table = useReactTable({
     data: employees,
-    columns: columns,
+    columns: dynamicColumns,
     state: {
       globalFilter,
       sorting,
@@ -107,7 +117,14 @@ export default function EmployeesDatatable() {
     <Page title="Employees Management">
       <div className="transition-content w-full pb-5">
         <div className={clsx("flex h-full w-full flex-col", tableSettings.enableFullScreen && "fixed inset-0 z-[61] bg-white pt-3 dark:bg-dark-900")}>
-          <Toolbar table={table} setEmployees={setEmployees} fetchEmployees={fetchEmployees} />
+          <Toolbar 
+          table={table} 
+          setEmployees={setEmployees} 
+          fetchEmployees={fetchEmployees}
+          selectedOptionalColumns={selectedOptionalColumns}
+          setSelectedOptionalColumns={setSelectedOptionalColumns}
+          columnOptions={columnOptions}
+        />
           <div className={clsx("transition-content flex grow flex-col pt-3", tableSettings.enableFullScreen ? "overflow-hidden" : "px-[--margin-x]")}>
             <Card className={clsx("relative flex grow flex-col", tableSettings.enableFullScreen && "overflow-hidden")}>
               <div className="table-wrapper min-w-full grow overflow-x-auto">

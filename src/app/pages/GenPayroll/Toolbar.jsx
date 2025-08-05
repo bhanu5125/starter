@@ -34,7 +34,7 @@ const departmentOptions = [
   { label: "HTPL", value: 5 },
 ];
 
-export function Toolbar({ table, setEmployees, fetchEmployees }) {
+export function Toolbar({ table, setEmployees, fetchEmployees, selectedOptionalColumns, setSelectedOptionalColumns, columnOptions }) {
   const { isXs } = useBreakpointsContext();
   const isFullScreenEnabled = table.getState().tableSettings.enableFullScreen;
   const navigate = useNavigate();
@@ -76,6 +76,11 @@ export function Toolbar({ table, setEmployees, fetchEmployees }) {
     } catch (error) {
       console.error("Error fetching employees:", error);
     }
+  };
+
+  const handleColumnSelectionChange = (selectedOptions) => {
+    const selectedIds = selectedOptions ? selectedOptions.map(option => option.value) : [];
+    setSelectedOptionalColumns(selectedIds);
   };
 
   const handleExport = async (reportType) => {
@@ -199,57 +204,83 @@ export function Toolbar({ table, setEmployees, fetchEmployees }) {
             </Button>
             </div>
           </div>
+          <div
+            className={clsx(
+              "flex justify-start pb-1 pt-2",
+              isFullScreenEnabled ? "px-4 sm:px-5" : "px-[--margin-x]",
+            )}
+          >
+            <ColumnSelection
+              selectedOptionalColumns={selectedOptionalColumns}
+              columnOptions={columnOptions}
+              handleColumnSelectionChange={handleColumnSelectionChange}
+            />
+          </div>
         </>
       ) : (
-        <div
-          className={clsx(
-            "custom-scrollbar transition-content flex justify-between space-x-4 overflow-x-auto pb-1 pt-4 rtl:space-x-reverse",
-            isFullScreenEnabled ? "px-4 sm:px-5" : "px-[--margin-x]",
-          )}
-        >
-          <Filters
-            selectedDepartment={selectedDepartment}
-            selectedYear={selectedYear}
-            selectedMonth={selectedMonth}
-            pEval={pEval}
-            handleDepartmentChange={handleDepartmentChange}
-            handleYearChange={handleYearChange}
-            handleMonthChange={handleMonthChange}
-            handlePEvalChange={handlePEvalChange}
-            handleGenerateClick={handleGenerateClick}
-            years={years}
-            months={monthNames}
-            departments={departmentOptions}
-          />
-          <div className="flex items-center space-x-3 rtl:space-x-reverse">
-          <Button
+        <>
+          <div
+            className={clsx(
+              "custom-scrollbar transition-content flex justify-between space-x-4 overflow-x-auto pb-1 pt-4 rtl:space-x-reverse",
+              isFullScreenEnabled ? "px-4 sm:px-5" : "px-[--margin-x]",
+            )}
+          >
+            <Filters
+              selectedDepartment={selectedDepartment}
+              selectedYear={selectedYear}
+              selectedMonth={selectedMonth}
+              pEval={pEval}
+              handleDepartmentChange={handleDepartmentChange}
+              handleYearChange={handleYearChange}
+              handleMonthChange={handleMonthChange}
+              handlePEvalChange={handlePEvalChange}
+              handleGenerateClick={handleGenerateClick}
+              years={years}
+              months={monthNames}
+              departments={departmentOptions}
+            />
+            <div className="flex items-center space-x-3 rtl:space-x-reverse">
+            <Button
+                  type="button"
+                  className="min-w-[5rem]"
+                  color="primary"
+                  variant="outlined"
+                  onClick={() => handleExport("salary")}
+                >
+                  Export
+                </Button>
+                <Button
+                  type="button"
+                  className="min-w-[8rem]"
+                  color="primary"
+                  onClick={() => handleExport("bank")}
+                >
+                  Export for Bank
+                </Button>
+                <Button
                 type="button"
-                className="min-w-[7rem]"
-                color="primary"
-                variant="outlined"
-                onClick={() => handleExport("salary")}
+                className="min-w-[5rem]"
+                onClick={() => {
+                  navigate("/dashboards/payroll");
+                }}
               >
-                Export
+                Back
               </Button>
-              <Button
-                type="button"
-                className="min-w-[7rem]"
-                color="primary"
-                onClick={() => handleExport("bank")}
-              >
-                Export for Bank
-              </Button>
-              <Button
-              type="button"
-              className="min-w-[7rem]"
-              onClick={() => {
-                navigate("/dashboards/payroll");
-              }}
-            >
-              Back
-            </Button>
+            </div>
           </div>
-        </div>
+          <div
+            className={clsx(
+              "flex justify-start pb-1 pt-2",
+              isFullScreenEnabled ? "px-4 sm:px-5" : "px-[--margin-x]",
+            )}
+          >
+            <ColumnSelection
+              selectedOptionalColumns={selectedOptionalColumns}
+              columnOptions={columnOptions}
+              handleColumnSelectionChange={handleColumnSelectionChange}
+            />
+          </div>
+        </>
       )}
     </div>
   );
@@ -340,8 +371,55 @@ const Filters = ({
   );
 };
 
+function ColumnSelection({ selectedOptionalColumns, columnOptions, handleColumnSelectionChange }) {
+  // Defensive programming: ensure columnOptions is an array
+  const safeColumnOptions = columnOptions || [];
+  const safeSelectedOptionalColumns = selectedOptionalColumns || [];
+  
+  const selectedOptions = safeColumnOptions.filter(option => 
+    safeSelectedOptionalColumns.includes(option.value)
+  );
+
+  return (
+    <div className="flex items-center space-x-2">
+      <span className="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+        Additional Columns:
+      </span>
+      <div className="min-w-[200px]">
+        <Listbox
+          multiple
+          value={selectedOptions}
+          onChange={handleColumnSelectionChange}
+          placeholder="Select columns..."
+          data={safeColumnOptions}
+        />
+      </div>
+    </div>
+  );
+}
+
+ColumnSelection.propTypes = {
+  selectedOptionalColumns: PropTypes.array,
+  columnOptions: PropTypes.array,
+  handleColumnSelectionChange: PropTypes.func.isRequired,
+};
+
+ColumnSelection.defaultProps = {
+  selectedOptionalColumns: [],
+  columnOptions: [],
+};
+
 Toolbar.propTypes = {
   table: PropTypes.object.isRequired,
   setEmployees: PropTypes.func.isRequired,
   fetchEmployees: PropTypes.func.isRequired,
+  selectedOptionalColumns: PropTypes.array,
+  setSelectedOptionalColumns: PropTypes.func,
+  columnOptions: PropTypes.array,
+};
+
+Toolbar.defaultProps = {
+  selectedOptionalColumns: [],
+  setSelectedOptionalColumns: () => {},
+  columnOptions: [],
 };

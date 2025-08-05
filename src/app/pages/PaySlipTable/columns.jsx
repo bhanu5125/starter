@@ -2,7 +2,6 @@ import { createColumnHelper } from "@tanstack/react-table";
 import {
   EmployeeIdCell,
   EmployeeNameCell,
-  DepartmentCell,
   TextCell,
   ButtonCell
 } from "./rows";
@@ -23,16 +22,18 @@ export const columns = [
     header: "Name",
     cell: EmployeeNameCell,
   }),
-  columnHelper.accessor("DeptName", {
-    header: "Department",
-    cell: DepartmentCell,
-  }),
   
   columnHelper.accessor("Generate", {
     header: "Action",
     cell: ButtonCell,
   }),
   /*
+
+  columnHelper.accessor("DeptName", {
+    header: "Department",
+    cell: DepartmentCell,
+  }),
+
   columnHelper.accessor("AcctNo", {
     header: "Account No",
     cell: TextCell,

@@ -25,6 +25,7 @@ import { PaginationSection } from "components/shared/table/PaginationSection";
 export default function EmployeesDatatable() {
   const [originalEmployees, setOriginalEmployees] = useState([]); // Store the original data
   const [employees, setEmployees] = useState([]); // Store the filtered data
+  const [selectedDepartment, setSelectedDepartment] = useState("All"); // Track selected department for columns
   //const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -48,7 +49,8 @@ export default function EmployeesDatatable() {
           created_by: staff.CreatedBy,
           modified_by: staff.ModifiedBy,
         }));
-  
+        
+        console.log("Fetched Employees Data:", data);
         // Automatically sort employees based on Active status
         const sortedData = [...data].sort((b, a) => {
           return b.status.localeCompare(a.status); // "Active" first, "Inactive" last
@@ -87,7 +89,7 @@ export default function EmployeesDatatable() {
 
   const table = useReactTable({
     data: employees,
-    columns: columns,
+    columns: columns(selectedDepartment), // Pass selected department to columns
     state: {
       globalFilter,
       sorting,
@@ -162,7 +164,8 @@ export default function EmployeesDatatable() {
             table={table}
             employees={employees}
             setEmployees={setEmployees}
-            originalEmployees={originalEmployees} // Pass the original data
+            originalEmployees={originalEmployees}
+            onDepartmentChange={setSelectedDepartment}
           />
           <div
             className={clsx(

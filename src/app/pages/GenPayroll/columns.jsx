@@ -2,13 +2,13 @@ import { createColumnHelper } from "@tanstack/react-table";
 import {
   EmployeeIdCell,
   EmployeeNameCell,
-  DepartmentCell,
   TextCell
 } from "./rows";
 
 const columnHelper = createColumnHelper();
 
-export const columns = [
+// Default columns that are always visible
+const defaultColumns = [
   columnHelper.display({
     id: "SNo",
     header: "S.No",
@@ -22,11 +22,11 @@ export const columns = [
     header: "Name",
     cell: EmployeeNameCell,
   }),
+  /*
   columnHelper.accessor("DeptName", {
     header: "Department",
     cell: DepartmentCell,
   }),
-  /*
   columnHelper.accessor("AcctNo", {
     header: "Account No",
     cell: TextCell,
@@ -44,6 +44,15 @@ export const columns = [
     cell: TextCell,
   }),
   */
+
+  columnHelper.accessor("NetSal", {
+    header: "Net Salary",
+    cell: TextCell,
+  }),
+];
+
+// Optional columns that can be selected by user
+const optionalColumns = [
   columnHelper.accessor("Salary", {
     header: "Salary",
     cell: TextCell,
@@ -100,18 +109,22 @@ export const columns = [
     header: "TDS",
     cell: TextCell,
   }),
-  columnHelper.accessor("NetSal", {
-    header: "Net Salary",
-    cell: TextCell,
-  }),
-  /*
-  columnHelper.accessor("Month", {
-    header: "Month",
-    cell: TextCell,
-  }),
-  columnHelper.accessor("Year", {
-    header: "Year",
-    cell: TextCell,
-  }),
-  */
 ];
+
+// Column options for the dropdown
+export const columnOptions = optionalColumns.map(col => ({
+  id: col.accessorKey || col.id,
+  label: col.header,
+  value: col.accessorKey || col.id
+}));
+
+// Function to get columns based on selected optional columns
+export const getColumns = (selectedOptionalColumns = []) => {
+  const selectedColumns = optionalColumns.filter(col => 
+    selectedOptionalColumns.includes(col.accessorKey || col.id)
+  );
+  return [...defaultColumns, ...selectedColumns];
+};
+
+// Export all columns for backward compatibility
+export const columns = [...defaultColumns, ...optionalColumns];
