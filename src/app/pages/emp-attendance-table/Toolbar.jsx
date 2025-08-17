@@ -55,6 +55,10 @@ export function Toolbar({
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedStaffType, setSelectedStaffType] = useState("All");
+
+  // Department id 4 corresponds to TSS DATA ENTRY in this screen
+  const isTSSDepartment = selectedDepartment === 4;
 
   // List of years.
   const years = Array.from({ length: 31 }, (_, i) => ({
@@ -91,11 +95,13 @@ export function Toolbar({
   const applyFilters = () => {
     let filteredData = [...originalEmployees];
 
-    // Apply department filter if selected
-    if (selectedDepartment) {
-      filteredData = filteredData.filter(
-        (employee) => employee.department_name === selectedDepartment,
-      );
+    // Note: Department filtering is handled via fetch (Generate). We only apply local
+    // filtering for staff type when TSS DATA ENTRY is selected.
+    if (isTSSDepartment && selectedStaffType !== "All") {
+      filteredData = filteredData.filter((employee) => {
+        const staffType = employee.staff_type ?? 0;
+        return staffType === selectedStaffType;
+      });
     }
 
     // Apply search filter if there's a search term
@@ -117,6 +123,8 @@ export function Toolbar({
 
   const handleDepartmentChange = (selectedOption) => {
     setSelectedDepartment(selectedOption?.value || "");
+    // Reset staff type when department changes
+    setSelectedStaffType("All");
   };
 
   const handleYearChange = (selectedOption) => {
@@ -141,11 +149,30 @@ export function Toolbar({
     setSearchTerm(event.target.value);
   };
 
+  // Staff type options (Groups 0-7)
+  const staffTypeOptions = [
+    { label: "All", value: "All" },
+    ...Array.from({ length: 8 }, (_, i) => ({ label: `Group ${i}`, value: i })),
+  ];
+
+  const handleStaffTypeChange = (option) => {
+    setSelectedStaffType(option.value);
+  };
+
   const handleGenerateClick = async () => {
     const dateStr = `${selectedYear}-${selectedMonth}-${selectedDate}`;
     const deptId = selectedDepartment || "";
 
-    await fetchAttendanceData(dateStr, deptId);
+    const data = await fetchAttendanceData(dateStr, deptId);
+    // Apply staff type filter only AFTER data is generated
+    let final = data || [];
+    if (isTSSDepartment && selectedStaffType !== "All") {
+      final = final.filter((emp) => {
+        const staffType = emp.staff_type ?? 0;
+        return staffType === selectedStaffType;
+      });
+    }
+    setEmployees(final);
   };
 
   const handleFilterClick = () => {
@@ -255,6 +282,10 @@ export function Toolbar({
               months={monthNames}
               dates={dates}
               isAdmin={isAdmin}
+              isTSSDepartment={isTSSDepartment}
+              staffTypeOptions={staffTypeOptions}
+              selectedStaffType={selectedStaffType}
+              handleStaffTypeChange={handleStaffTypeChange}
             />
             <div className="flex items-center space-x-3">
               <Button
@@ -304,6 +335,10 @@ export function Toolbar({
               months={monthNames}
               dates={dates}
               isAdmin={isAdmin}
+              isTSSDepartment={isTSSDepartment}
+              staffTypeOptions={staffTypeOptions}
+              selectedStaffType={selectedStaffType}
+              handleStaffTypeChange={handleStaffTypeChange}
             />
           </div>
           <div className="flex items-center space-x-3">
@@ -364,6 +399,10 @@ const Filters = ({
   months,
   dates,
   isAdmin,
+  isTSSDepartment,
+  staffTypeOptions,
+  selectedStaffType,
+  handleStaffTypeChange,
 }) => {
   const departments = [
     { label: "All", value: "" },
@@ -384,6 +423,17 @@ const Filters = ({
         placeholder="Select Department"
         displayField="label"
       />
+      {isTSSDepartment && (
+        <Listbox
+          style={{ minWidth: "120px", maxWidth: "160px", width: "100%" }}
+          data={staffTypeOptions}
+          value={staffTypeOptions.find((t) => t.value === selectedStaffType) || staffTypeOptions[0]}
+          onChange={handleStaffTypeChange}
+          displayField="label"
+          valueField="value"
+          placeholder="Select Group"
+        />
+      )}
       <Listbox
         style={{ minWidth: "120px", maxWidth: "150px", width: "100%" }}
         data={years}
@@ -443,7 +493,7 @@ Filters.propTypes = {
   employees: PropTypes.array,
   setEmployees: PropTypes.func,
   originalEmployees: PropTypes.array,
-  selectedDepartment: PropTypes.string,
+  selectedDepartment: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   selectedYear: PropTypes.string,
   selectedMonth: PropTypes.string,
   selectedDate: PropTypes.string,
@@ -457,6 +507,10 @@ Filters.propTypes = {
   dates: PropTypes.array,
   isAdmin: PropTypes.bool,
   handleResetFilters: PropTypes.func,
+  isTSSDepartment: PropTypes.bool,
+  staffTypeOptions: PropTypes.array,
+  selectedStaffType: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  handleStaffTypeChange: PropTypes.func,
 };
 
 export default Toolbar;

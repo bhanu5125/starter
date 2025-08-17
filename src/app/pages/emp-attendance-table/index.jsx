@@ -41,9 +41,9 @@ export default function EmployeesDatatable() {
       const resp = await axios.get("https://dev.trafficcounting.in/nodejs/api/attendance", {
         params: { date, deptId },
       });
-  
+
       console.log("Attendance data:", resp.data);
-  
+
       // Normalize data to match table structure
       const normalizedData = resp.data.map(staff => ({
         employee_id: staff.SID,
@@ -51,18 +51,21 @@ export default function EmployeesDatatable() {
         firstname: staff.FIRSTNAME,
         surname: staff.SURNAME,
         department_name: staff.DEPARTMENT,
+        staff_type: staff.StaffType,
         attendance: staff.attendance,
         year: staff.Year,
       }));
-  
+
       // Update both original and filtered data
       setOriginalEmployees(normalizedData);
       setEmployees(normalizedData);
       setTableRefreshKey(prev => prev + 1); // Force table refresh
+      return normalizedData;
       
     } catch (err) {
       console.error("Error fetching attendance data:", err);
       // Optionally show error to user
+      return [];
     } finally {
       setIsLoading(false);
     }

@@ -383,14 +383,14 @@ function ColumnSelection({ selectedOptionalColumns, columnOptions, handleColumnS
   return (
     <div className="flex items-center space-x-2">
       <span className="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
-        Additional Columns:
+        Columns:
       </span>
       <div className="min-w-[200px]">
         <Listbox
           multiple
           value={selectedOptions}
           onChange={handleColumnSelectionChange}
-          placeholder="Select columns..."
+          placeholder="Show/Hide columns..."
           data={safeColumnOptions}
         />
       </div>

@@ -7,8 +7,8 @@ import {
 
 const columnHelper = createColumnHelper();
 
-// Default columns that are always visible
-const defaultColumns = [
+// Unified list of all columns (all are selectable)
+const allColumns = [
   columnHelper.display({
     id: "SNo",
     header: "S.No",
@@ -44,41 +44,12 @@ const defaultColumns = [
     cell: TextCell,
   }),
   */
-
-  columnHelper.accessor("NetSal", {
-    header: "Net Salary",
-    cell: TextCell,
-  }),
-];
-
-// Optional columns that can be selected by user
-const optionalColumns = [
   columnHelper.accessor("Salary", {
     header: "Salary",
     cell: TextCell,
   }),
-  columnHelper.accessor("Absent", {
-    header: "Absent",
-    cell: TextCell,
-  }),
-  columnHelper.accessor("LOP", {
-    header: "LOP",
-    cell: TextCell,
-  }),
   columnHelper.accessor("GrossSal", {
     header: "Gross Salary",
-    cell: TextCell,
-  }),
-  columnHelper.accessor("Basic", {
-    header: "Basic",
-    cell: TextCell,
-  }),
-  columnHelper.accessor("HRA", {
-    header: "HRA",
-    cell: TextCell,
-  }),
-  columnHelper.accessor("Others", {
-    header: "Others",
     cell: TextCell,
   }),
   columnHelper.accessor("PF", {
@@ -109,22 +80,48 @@ const optionalColumns = [
     header: "TDS",
     cell: TextCell,
   }),
+  columnHelper.accessor("NetSal", {
+    header: "Net Salary",
+    cell: TextCell,
+  }),
+  columnHelper.accessor("Absent", {
+    header: "Absent",
+    cell: TextCell,
+  }),
+  columnHelper.accessor("LOP", {
+    header: "LOP",
+    cell: TextCell,
+  }),
+  columnHelper.accessor("Basic", {
+    header: "Basic",
+    cell: TextCell,
+  }),
+  columnHelper.accessor("HRA", {
+    header: "HRA",
+    cell: TextCell,
+  }),
+  columnHelper.accessor("Others", {
+    header: "Others",
+    cell: TextCell,
+  }),
 ];
 
-// Column options for the dropdown
-export const columnOptions = optionalColumns.map(col => ({
+// Column options for the dropdown (from all columns)
+export const columnOptions = allColumns.map((col) => ({
   id: col.accessorKey || col.id,
   label: col.header,
-  value: col.accessorKey || col.id
+  value: col.accessorKey || col.id,
 }));
 
-// Function to get columns based on selected optional columns
-export const getColumns = (selectedOptionalColumns = []) => {
-  const selectedColumns = optionalColumns.filter(col => 
-    selectedOptionalColumns.includes(col.accessorKey || col.id)
-  );
-  return [...defaultColumns, ...selectedColumns];
+// Function to get columns based on selected columns
+export const getColumns = (selectedColumns = []) => {
+  const selectedSet = new Set(selectedColumns);
+  // If none provided, default to all
+  const finalColumns = selectedSet.size
+    ? allColumns.filter((col) => selectedSet.has(col.accessorKey || col.id))
+    : allColumns;
+  return finalColumns;
 };
 
-// Export all columns for backward compatibility
-export const columns = [...defaultColumns, ...optionalColumns];
+// Export all columns
+export const columns = [...allColumns];

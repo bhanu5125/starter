@@ -23,7 +23,11 @@ import { PaginationSection } from "components/shared/table/PaginationSection";
 
 export default function EmployeesDatatable() {
   const [employees, setEmployees] = useState([]);
-  const [selectedOptionalColumns, setSelectedOptionalColumns] = useState([]);
+  // Start with all columns selected by default EXCEPT specific ones
+  const [selectedOptionalColumns, setSelectedOptionalColumns] = useState(() => {
+    const exclude = new Set(["Absent", "LOP", "Basic", "HRA", "Others"]);
+    return columnOptions.map((c) => c.value).filter((v) => !exclude.has(v));
+  });
 
   const fetchEmployees = async (deptId = 0, year = new Date().getFullYear(), month = (new Date().getMonth() + 1), pPEVal = 2) => {
     try {
