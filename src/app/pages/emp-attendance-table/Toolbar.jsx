@@ -189,15 +189,17 @@ export function Toolbar({
     setIsSaving(true);
     try {
       // Prepare the records to save
+      // New logic: attendance true = present (checked), false = absent (unchecked)
+      // Backend expects 0 for present, 1 for absent
       const records = employees.map((emp) => {
-        const isAbsent = emp.attendance;
+        const isPresent = emp.attendance; // true = present, false = absent
         return {
           staffId: emp.employee_id,
           date: `${selectedYear}-${String(selectedMonth).padStart(2, "0")}-${String(selectedDate).padStart(2, "0")}`,
-          status: isAbsent,
+          status: isPresent ? 0 : 1, // backend expects 0 for present, 1 for absent
         };
       });
-      console.log("Attendance records to save:", records);
+      console.log("Attendance records to save (0=present, 1=absent):", records);
 
       if (records.length === 0) {
         alert("No attendance records to save.");

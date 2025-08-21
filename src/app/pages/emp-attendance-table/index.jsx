@@ -52,7 +52,8 @@ export default function EmployeesDatatable() {
         surname: staff.SURNAME,
         department_name: staff.DEPARTMENT,
         staff_type: staff.StaffType,
-        attendance: staff.attendance,
+  // Invert: backend false = present (checked), true = absent (unchecked)
+  attendance: staff.attendance === false ? true : false,
         year: staff.Year,
       }));
 

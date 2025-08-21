@@ -22,17 +22,17 @@ export function TextCell({ getValue }) {
 }
 
 export function CheckCell({ getValue, row }) {
-  const attendanceStatus = getValue();  // boolean: true = absent, false = present
+  const attendanceStatus = getValue();  // boolean: true = present, false = absent
 
-  const [checked, setChecked] = React.useState(attendanceStatus); 
-  // checked = present → true, unchecked = absent → false
+  // New logic: checked = present, unchecked = absent
+  const [checked, setChecked] = React.useState(attendanceStatus);
 
   const handleChange = () => {
     const newChecked = !checked;
     setChecked(newChecked);
-    row.original.attendance = newChecked; 
-    // If checked (present), attendance = false (not absent)
-    // If unchecked (absent), attendance = true (absent)
+    // If checked (present), attendance = true (present)
+    // If unchecked (absent), attendance = false (absent)
+    row.original.attendance = newChecked;
   };
 
   return (
