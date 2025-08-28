@@ -53,30 +53,33 @@ export function Toolbar({ table, setEmployees, fetchEmployees, selectedOptionalC
     value: 2018 + i,
   }));
 
+
+  // Unified handler to update state and fetch employees
   const handleDepartmentChange = (selectedOption) => {
-    setSelectedDepartment(selectedOption?.value || 0);
+    const value = selectedOption?.value || 0;
+    setSelectedDepartment(value);
+    fetchEmployees(value, selectedYear, selectedMonth, pEval);
   };
 
   const handleYearChange = (selectedOption) => {
-    setSelectedYear(selectedOption?.value || currentYear);
+    const value = selectedOption?.value || currentYear;
+    setSelectedYear(value);
+    fetchEmployees(selectedDepartment, value, selectedMonth, pEval);
   };
 
   const handleMonthChange = (selectedOption) => {
-    setSelectedMonth(selectedOption?.value || currentMonth);
+    const value = selectedOption?.value || currentMonth;
+    setSelectedMonth(value);
+    fetchEmployees(selectedDepartment, selectedYear, value, pEval);
   };
 
   const handlePEvalChange = (selectedOption) => {
-    setPEval(selectedOption?.value ?? 2);
+    const value = selectedOption?.value ?? 2;
+    setPEval(value);
+    fetchEmployees(selectedDepartment, selectedYear, selectedMonth, value);
   };
 
-  const handleGenerateClick = async () => {
-    try {
-      // Call the API with the current filter values (pPEVal is set to 0 here)
-      await fetchEmployees(selectedDepartment, selectedYear, selectedMonth, pEval);
-    } catch (error) {
-      console.error("Error fetching employees:", error);
-    }
-  };
+  // Remove handleGenerateClick, not needed anymore
 
   const handleColumnSelectionChange = (selectedOptions) => {
     const selectedIds = selectedOptions ? selectedOptions.map(option => option.value) : [];
@@ -170,7 +173,6 @@ export function Toolbar({ table, setEmployees, fetchEmployees, selectedOptionalC
               handleYearChange={handleYearChange}
               handleMonthChange={handleMonthChange}
               handlePEvalChange={handlePEvalChange}
-              handleGenerateClick={handleGenerateClick}
               years={years}
               months={monthNames}
               departments={departmentOptions}
@@ -234,7 +236,6 @@ export function Toolbar({ table, setEmployees, fetchEmployees, selectedOptionalC
               handleYearChange={handleYearChange}
               handleMonthChange={handleMonthChange}
               handlePEvalChange={handlePEvalChange}
-              handleGenerateClick={handleGenerateClick}
               years={years}
               months={monthNames}
               departments={departmentOptions}
@@ -309,12 +310,10 @@ const Filters = ({
   handleYearChange,
   handleMonthChange,
   handlePEvalChange,
-  handleGenerateClick,
   years,
   months,
   departments,
 }) => {
-
   return (
     <div className="flex items-center gap-4 p-2">
       <Listbox
@@ -357,16 +356,6 @@ const Filters = ({
         onChange={handlePEvalChange}
         displayField="label"
       />
-
-      <div className="flex gap-2">
-        <Button
-          className="rounded-md px-4 py-2 text-white"
-          color="primary"
-          onClick={handleGenerateClick}
-        >
-          Generate
-        </Button>
-      </div>
     </div>
   );
 };

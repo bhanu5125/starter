@@ -53,24 +53,21 @@ export function Toolbar({ table, setEmployees, fetchEmployees }) {
   }));
 
   const handleDepartmentChange = (selectedOption) => {
-    setSelectedDepartment(selectedOption?.value || 0);
+    const value = selectedOption?.value || 0;
+    setSelectedDepartment(value);
+    fetchEmployees(value, selectedYear, selectedMonth, 2);
   };
 
   const handleYearChange = (selectedOption) => {
-    setSelectedYear(selectedOption?.value || currentYear);
+    const value = selectedOption?.value || currentYear;
+    setSelectedYear(value);
+    fetchEmployees(selectedDepartment, value, selectedMonth, 2);
   };
 
   const handleMonthChange = (selectedOption) => {
-    setSelectedMonth(selectedOption?.value || currentMonth);
-  };
-
-  const handleGenerateClick = async () => {
-    try {
-      // Call the API with the current filter values (pPEVal is set to 2 here)
-      await fetchEmployees(selectedDepartment, selectedYear, selectedMonth, 2);
-    } catch (error) {
-      console.error("Error fetching employees:", error);
-    }
+    const value = selectedOption?.value || currentMonth;
+    setSelectedMonth(value);
+    fetchEmployees(selectedDepartment, selectedYear, value, 2);
   };
   
   return (
@@ -110,7 +107,6 @@ export function Toolbar({ table, setEmployees, fetchEmployees }) {
               handleDepartmentChange={handleDepartmentChange}
               handleYearChange={handleYearChange}
               handleMonthChange={handleMonthChange}
-              handleGenerateClick={handleGenerateClick}
               years={years}
               months={monthNames}
               departments={departmentOptions}
@@ -131,7 +127,6 @@ export function Toolbar({ table, setEmployees, fetchEmployees }) {
             handleDepartmentChange={handleDepartmentChange}
             handleYearChange={handleYearChange}
             handleMonthChange={handleMonthChange}
-            handleGenerateClick={handleGenerateClick}
             years={years}
             months={monthNames}
             departments={departmentOptions}
@@ -176,7 +171,6 @@ const Filters = ({
   handleDepartmentChange,
   handleYearChange,
   handleMonthChange,
-  handleGenerateClick,
   years,
   months,
   departments,
@@ -207,15 +201,6 @@ const Filters = ({
         onChange={handleMonthChange}
         displayField="label"
       />
-      <div className="flex gap-2">
-        <Button
-          className="rounded-md px-4 py-2 text-white"
-          color="primary"
-          onClick={handleGenerateClick}
-        >
-          Generate
-        </Button>
-      </div>
     </div>
   );
 };

@@ -121,27 +121,45 @@ export function Toolbar({
     setEmployees(filteredData);
   };
 
-  const handleDepartmentChange = (selectedOption) => {
-    setSelectedDepartment(selectedOption?.value || "");
-    // Reset staff type when department changes
+  const [isTableLoading, setIsTableLoading] = useState(false);
+
+  const handleDepartmentChange = async (selectedOption) => {
+    const value = selectedOption?.value || "";
+    setSelectedDepartment(value);
     setSelectedStaffType("All");
+    const dateStr = `${selectedYear}-${selectedMonth}-${selectedDate}`;
+    setIsTableLoading(true);
+    await fetchAttendanceData(dateStr, value);
+    setIsTableLoading(false);
   };
 
-  const handleYearChange = (selectedOption) => {
+  const handleYearChange = async (selectedOption) => {
     if (isAdmin && selectedOption) {
       setSelectedYear(selectedOption.value);
+      const dateStr = `${selectedOption.value}-${selectedMonth}-${selectedDate}`;
+      setIsTableLoading(true);
+      await fetchAttendanceData(dateStr, selectedDepartment);
+      setIsTableLoading(false);
     }
   };
 
-  const handleMonthChange = (selectedOption) => {
+  const handleMonthChange = async (selectedOption) => {
     if (isAdmin && selectedOption) {
       setSelectedMonth(selectedOption.value);
+      const dateStr = `${selectedYear}-${selectedOption.value}-${selectedDate}`;
+      setIsTableLoading(true);
+      await fetchAttendanceData(dateStr, selectedDepartment);
+      setIsTableLoading(false);
     }
   };
 
-  const handleDateChange = (selectedOption) => {
+  const handleDateChange = async (selectedOption) => {
     if (isAdmin && selectedOption) {
       setSelectedDate(selectedOption.value);
+      const dateStr = `${selectedYear}-${selectedMonth}-${selectedOption.value}`;
+      setIsTableLoading(true);
+      await fetchAttendanceData(dateStr, selectedDepartment);
+      setIsTableLoading(false);
     }
   };
 
@@ -157,6 +175,17 @@ export function Toolbar({
 
   const handleStaffTypeChange = (option) => {
     setSelectedStaffType(option.value);
+    // If TSS DATA ENTRY is selected, apply staff type filter immediately
+    if (isTSSDepartment) {
+      let filteredData = [...originalEmployees];
+      if (option.value !== "All") {
+        filteredData = filteredData.filter((employee) => {
+          const staffType = employee.staff_type ?? 0;
+          return staffType === option.value;
+        });
+      }
+      setEmployees(filteredData);
+    }
   };
 
   const handleGenerateClick = async () => {
@@ -251,6 +280,9 @@ export function Toolbar({
           </h2>
         </div>
       </div>
+      {isTableLoading && (
+        <div className="w-full text-center py-2 text-blue-600 font-medium">Loading...</div>
+      )}
       {isXs ? (
         <>
           <div
@@ -279,7 +311,6 @@ export function Toolbar({
               handleYearChange={handleYearChange}
               handleMonthChange={handleMonthChange}
               handleDateChange={handleDateChange}
-              handleGenerateClick={handleGenerateClick}
               years={years}
               months={monthNames}
               dates={dates}
@@ -332,7 +363,6 @@ export function Toolbar({
               handleYearChange={handleYearChange}
               handleMonthChange={handleMonthChange}
               handleDateChange={handleDateChange}
-              handleGenerateClick={handleGenerateClick}
               years={years}
               months={monthNames}
               dates={dates}
@@ -463,16 +493,7 @@ const Filters = ({
         displayField="label"
         disabled={!isAdmin}
       />
-      <Button
-        type="button"
-        color="primary"
-        variant="outlined"
-        className="min-w-[7rem]"
-        onClick={handleGenerateClick}
-        disabled={isLoading} // Disable while loading
-      >
-        {isLoading ? "Generating..." : "Generate"}
-      </Button>
+  {/* Generate button removed: filtering is now automatic */}
     </div>
   );
 };

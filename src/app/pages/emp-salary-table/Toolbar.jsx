@@ -6,7 +6,7 @@ import { Button, Input } from "components/ui";
 import { TableConfig } from "./TableConfig";
 import { useBreakpointsContext } from "app/contexts/breakpoint/context";
 import { Listbox } from "components/shared/form/Listbox";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 export function Toolbar({ 
@@ -23,25 +23,28 @@ export function Toolbar({
   const isFullScreenEnabled = table?.getState()?.tableSettings?.enableFullScreen || false;
   const navigate = useNavigate();
   
-  const [selectedDepartment, setSelectedDepartment] = useState("All");
+    const [selectedDepartment, setSelectedDepartment] = useState("All");
+
+    // Sync Listbox display to 'All' when reset (when originalEmployees changes after reset)
+    // This ensures the Listbox always shows the correct value after a reset/save
+    useEffect(() => {
+      setSelectedDepartment("All");
+    }, [originalEmployees]);
+
+    const handleResetClick = () => {
+      onReset();
+    };
 
   const handleDepartmentChange = (selectedOption) => {
-    setSelectedDepartment(selectedOption?.value || "All");
-  };
-
-  const handleGenerateClick = () => {
+    const value = selectedOption?.value || "All";
+    setSelectedDepartment(value);
     const filteredEmployees = originalEmployees.filter((employee) => {
-      return selectedDepartment === "All" || 
-             employee.department_name === selectedDepartment;
+      return value === "All" || employee.department_name === value;
     });
-
     setEmployees(filteredEmployees);
   };
 
-  const handleResetClick = () => {
-    setSelectedDepartment("All");
-    onReset();
-  };
+    // handleResetClick is now above, updated to force Listbox re-render
 
   const departments = [
     { label: "All", value: "All" },
@@ -80,13 +83,7 @@ export function Toolbar({
                 onChange={handleDepartmentChange}
                 displayField="label"
               />
-              <Button 
-                className="rounded-md px-4 py-2 text-white" 
-                color="primary" 
-                onClick={handleGenerateClick}
-              >
-                Generate
-              </Button>
+              {/* Generate button removed: filtering is now automatic */}
             </div>
             
             <div className="flex items-center space-x-3 rtl:space-x-reverse">
@@ -126,13 +123,7 @@ export function Toolbar({
               onChange={handleDepartmentChange}
               displayField="label"
             />
-            <Button 
-              className="rounded-md px-4 py-2 text-white" 
-              color="primary" 
-              onClick={handleGenerateClick}
-            >
-              Generate
-            </Button>
+            {/* Generate button removed: filtering is now automatic */}
           </div>
           
           <div className="flex items-center space-x-3 rtl:space-x-reverse">

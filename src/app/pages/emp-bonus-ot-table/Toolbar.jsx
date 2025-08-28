@@ -67,12 +67,14 @@ export function Toolbar({
   const handleYearChange = (selectedOption) => {
     if (isAdmin && selectedOption) {
       setSelectedYear(selectedOption.value);
+      fetchAttendanceData(selectedOption.value, selectedMonth, selectedDepartment || "");
     }
   };
 
   const handleMonthChange = (selectedOption) => {
     if (isAdmin && selectedOption) {
       setSelectedMonth(selectedOption.value);
+      fetchAttendanceData(selectedYear, selectedOption.value, selectedDepartment || "");
     }
   };
 
@@ -105,7 +107,9 @@ export function Toolbar({
   };
 
   const handleDepartmentChange = (selectedOption) => {
-    setSelectedDepartment(selectedOption?.value || "");
+    const value = selectedOption?.value || "";
+    setSelectedDepartment(value);
+    fetchAttendanceData(selectedYear, selectedMonth, value);
   };
 
   // Removed year, month, date change handlers
@@ -365,15 +369,7 @@ const Filters = ({
         displayField="label"
         disabled={!isAdmin}
       />
-      <Button
-        type="button"
-        color="primary"
-        variant="outlined"
-        className="min-w-[7rem]"
-        onClick={handleGenerateClick}
-      >
-        Generate
-      </Button>
+  {/* Generate button removed: filtering is now automatic */}
     </div>
   );
 };
