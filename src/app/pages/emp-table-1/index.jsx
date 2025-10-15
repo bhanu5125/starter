@@ -31,7 +31,7 @@ export default function EmployeesDatatable() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get("https://tcs.trafficcounting.in/nodejs/api/getstaff");
+        const response = await axios.get("https://tcs.trafficcounting.com/nodejs/api/getstaff");
         const data = response.data.map((staff) => ({
           employee_id: staff.SId,
           code: staff.Code,

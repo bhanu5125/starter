@@ -125,8 +125,8 @@ export function PersonalInfo({
       console.log("Form Data:", formData);
 
       const endpoint = isEditMode
-        ? `https://tcs.trafficcounting.in/nodejs/api/update-staff/${code}`
-        : "https://tcs.trafficcounting.in/nodejs/api/submit-form";
+        ? `https://tcs.trafficcounting.com/nodejs/api/update-staff/${code}`
+        : "https://tcs.trafficcounting.com/nodejs/api/submit-form";
 
       const method = isEditMode ? "PUT" : "POST";
       const response = await axios({

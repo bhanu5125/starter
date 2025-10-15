@@ -154,7 +154,7 @@ export function Toolbar({
 
       // Save OT/Bonus records
       const response = await axios.post(
-        "https://tcs.trafficcounting.in/nodejs/api/ot-bonus",
+        "https://tcs.trafficcounting.com/nodejs/api/ot-bonus",
         {
           records,
         },

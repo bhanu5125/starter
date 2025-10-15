@@ -13,7 +13,7 @@ export default function EmpView() {
     const fetchData = async () => {
       try {
         const { data } = await axios.get(
-          `https://tcs.trafficcounting.in/nodejs/api/get-staff/${code}`
+          `https://tcs.trafficcounting.com/nodejs/api/get-staff/${code}`
         );
         if (data) {
           const { staff, tblsourcebk } = data;
