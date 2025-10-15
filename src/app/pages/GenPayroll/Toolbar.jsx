@@ -96,7 +96,7 @@ export function Toolbar({ table, setEmployees, fetchEmployees, selectedOptionalC
   
     try {
       const response = await axios.get(
-        `https://dev.trafficcounting.in/nodejs/api/export-${reportType}?${params.toString()}`,
+        `https://tcs.trafficcounting.in/nodejs/api/export-${reportType}?${params.toString()}`,
         {
           responseType: "blob", // Important for binary responses
         }

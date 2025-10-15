@@ -278,7 +278,7 @@ export function Toolbar({
 
       // Save attendance records
       const response = await axios.post(
-        "https://dev.trafficcounting.in/nodejs/api/attendance",
+        "https://tcs.trafficcounting.in/nodejs/api/attendance",
         {
           records,
         },

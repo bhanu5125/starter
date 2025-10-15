@@ -23,7 +23,7 @@ export default function PayslipReport() {
       setLoading(false);
     } else {
       axios
-        .get("https://dev.trafficcounting.in/nodejs/api/get-payslip", {
+        .get("https://tcs.trafficcounting.in/nodejs/api/get-payslip", {
           params: { staffId: id },
         })
         .then((res) => {
