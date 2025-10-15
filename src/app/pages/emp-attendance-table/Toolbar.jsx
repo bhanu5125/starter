@@ -3,6 +3,7 @@ import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import clsx from "clsx";
 import PropTypes from "prop-types";
 import { Button, Input } from "components/ui";
+import { Checkbox } from "components/ui";
 import { TableConfig } from "./TableConfig";
 import { useBreakpointsContext } from "app/contexts/breakpoint/context";
 import { Listbox } from "components/shared/form/Listbox";
@@ -34,6 +35,7 @@ export function Toolbar({
   originalEmployees = [],
   fetchAttendanceData,
 }) {
+  const [isOT, setIsOT] = useState(false); // OT checkbox state
   const { isXs } = useBreakpointsContext();
   const isFullScreenEnabled = table.getState().tableSettings.enableFullScreen;
   const navigate = useNavigate();
@@ -129,7 +131,12 @@ export function Toolbar({
     setSelectedStaffType("All");
     const dateStr = `${selectedYear}-${selectedMonth}-${selectedDate}`;
     setIsTableLoading(true);
-    await fetchAttendanceData(dateStr, value);
+    const result = await fetchAttendanceData(dateStr, value);
+    if (result && result.hasOT) {
+      setIsOT(true);
+    } else {
+      setIsOT(false);
+    }
     setIsTableLoading(false);
   };
 
@@ -138,7 +145,12 @@ export function Toolbar({
       setSelectedYear(selectedOption.value);
       const dateStr = `${selectedOption.value}-${selectedMonth}-${selectedDate}`;
       setIsTableLoading(true);
-      await fetchAttendanceData(dateStr, selectedDepartment);
+      const result = await fetchAttendanceData(dateStr, selectedDepartment);
+      if (result && result.hasOT) {
+        setIsOT(true);
+      } else {
+        setIsOT(false);
+      }
       setIsTableLoading(false);
     }
   };
@@ -148,7 +160,12 @@ export function Toolbar({
       setSelectedMonth(selectedOption.value);
       const dateStr = `${selectedYear}-${selectedOption.value}-${selectedDate}`;
       setIsTableLoading(true);
-      await fetchAttendanceData(dateStr, selectedDepartment);
+      const result = await fetchAttendanceData(dateStr, selectedDepartment);
+      if (result && result.hasOT) {
+        setIsOT(true);
+      } else {
+        setIsOT(false);
+      }
       setIsTableLoading(false);
     }
   };
@@ -158,13 +175,36 @@ export function Toolbar({
       setSelectedDate(selectedOption.value);
       const dateStr = `${selectedYear}-${selectedMonth}-${selectedOption.value}`;
       setIsTableLoading(true);
-      await fetchAttendanceData(dateStr, selectedDepartment);
+      const result = await fetchAttendanceData(dateStr, selectedDepartment);
+      if (result && result.hasOT) {
+        setIsOT(true);
+      } else {
+        setIsOT(false);
+      }
       setIsTableLoading(false);
     }
   };
 
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
+  };
+
+  // Handle OT checkbox change with confirmation
+  const handleOTChange = (e) => {
+    const shouldEnableOT = e.target.checked;
+    
+    if (shouldEnableOT) {
+      const dateFormatted = `${selectedDate}-${selectedMonth}-${selectedYear}`;
+      const confirmOT = window.confirm(
+        `This date (${dateFormatted}) will be considered as OT. Do you want to continue?`
+      );
+      
+      if (!confirmOT) {
+        return; // Don't change the checkbox state if user cancels
+      }
+    }
+    
+    setIsOT(shouldEnableOT);
   };
 
   // Staff type options (Groups 0-7)
@@ -226,6 +266,7 @@ export function Toolbar({
           staffId: emp.employee_id,
           date: `${selectedYear}-${String(selectedMonth).padStart(2, "0")}-${String(selectedDate).padStart(2, "0")}`,
           status: isPresent ? 0 : 1, // backend expects 0 for present, 1 for absent
+          isOT: isOT
         };
       });
       console.log("Attendance records to save (0=present, 1=absent):", records);
@@ -319,6 +360,8 @@ export function Toolbar({
               staffTypeOptions={staffTypeOptions}
               selectedStaffType={selectedStaffType}
               handleStaffTypeChange={handleStaffTypeChange}
+              isOT={isOT}
+              handleOTChange={handleOTChange}
             />
             <div className="flex items-center space-x-3">
               <Button
@@ -371,6 +414,8 @@ export function Toolbar({
               staffTypeOptions={staffTypeOptions}
               selectedStaffType={selectedStaffType}
               handleStaffTypeChange={handleStaffTypeChange}
+              isOT={isOT}
+              handleOTChange={handleOTChange}
             />
           </div>
           <div className="flex items-center space-x-3">
@@ -435,6 +480,8 @@ const Filters = ({
   staffTypeOptions,
   selectedStaffType,
   handleStaffTypeChange,
+  isOT,
+  handleOTChange,
 }) => {
   const departments = [
     { label: "All", value: "" },
@@ -493,7 +540,16 @@ const Filters = ({
         displayField="label"
         disabled={!isAdmin}
       />
-  {/* Generate button removed: filtering is now automatic */}
+      {/* OT Checkbox */}
+      <div className="flex items-center">
+        <Checkbox
+          checked={isOT}
+          onChange={handleOTChange}
+          label="OT"
+          color="primary"
+          variant="outlined"
+        />
+      </div>
     </div>
   );
 };
@@ -534,6 +590,8 @@ Filters.propTypes = {
   staffTypeOptions: PropTypes.array,
   selectedStaffType: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   handleStaffTypeChange: PropTypes.func,
+  isOT: PropTypes.bool,
+  handleOTChange: PropTypes.func,
 };
 
 export default Toolbar;

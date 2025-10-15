@@ -22,24 +22,23 @@ export function TextCell({ getValue }) {
 }
 
 export function OTCell({ getValue, row }) {
-  const [value, setValue] = React.useState(getValue() || 0);
+  const otCount = getValue() || 0;
+  const otDays = row.original.ot_days;
 
-  const handleChange = (e) => {
-    const newVal = Number(e.target.value);
-    setValue(newVal);
-    row.original.ot = newVal; // Directly update ot field
-  };
+  // Parse OT days if they exist
+  const daysArray = otDays ? otDays.split(',').map(d => d.trim()).filter(Boolean) : [];
 
   return (
-    <Input 
-      size="small"
-      type="number"
-      min="0"
-      max="24"
-      value={value}
-      onChange={handleChange}
-      className="w-20"
-    />
+    <div className="flex flex-col gap-1">
+      <p className="text-sm font-medium text-gray-800 dark:text-dark-100">
+        {otCount} {otCount === 1 ? 'day' : 'days'}
+      </p>
+      {daysArray.length > 0 && (
+        <p className="text-xs text-gray-500 dark:text-dark-400">
+          Date(s): {daysArray.sort().join(', ')}
+        </p>
+      )}
+    </div>
   );
 }
 

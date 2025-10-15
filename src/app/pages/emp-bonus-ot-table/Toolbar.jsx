@@ -135,19 +135,17 @@ export function Toolbar({
 
     setIsSaving(true);
     try {
-      // Prepare the records to save (only ot and bonus)
+      // Prepare the records to save (only bonus - OT is read-only)
       const records = employees.map((emp) => {
-        const otHours = emp.ot || 0;
         const bonus = emp.bonus || 0;
         return {
           staffId: emp.employee_id,
           year: selectedYear,
           month: selectedMonth,
-          ot: parseFloat(otHours) || 0,
           bonus: bonus,
         };
       });
-      console.log("OT/Bonus records to save:", records);
+      console.log("Bonus records to save:", records);
 
       if (records.length === 0) {
         alert("No records to save.");

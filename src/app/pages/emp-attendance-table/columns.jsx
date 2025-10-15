@@ -33,6 +33,5 @@ export const columns = [
     header: "Attendance",
     cell: CheckCell,
   }),
-
 ];
 

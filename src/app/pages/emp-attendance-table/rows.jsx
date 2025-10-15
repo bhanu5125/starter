@@ -65,7 +65,6 @@ export function EmployeeNameCell({ row, getValue }) {
   const name = getValue();
   return (
     <div className="flex items-center space-x-4 rtl:space-x-reverse">
-
       <span className="font-medium text-gray-800 dark:text-dark-100">{name}</span>
     </div>
   );
@@ -83,6 +82,22 @@ export function StatusCell({ getValue }) {
   );
 }
 
+export function OTIndicatorCell({ row }) {
+  const isOT = row.original.isOT;
+  
+  if (!isOT) {
+    return null;
+  }
+  
+  return (
+    <div className="flex justify-center">
+      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
+        OT
+      </span>
+    </div>
+  );
+}
+
 // PropTypes
 TextCell.propTypes = { getValue: PropTypes.func };
 EmployeeIdCell.propTypes = { index: PropTypes.number };
@@ -91,3 +106,4 @@ EmployeeNameCell.propTypes = { row: PropTypes.object, getValue: PropTypes.func }
 DepartmentCell.propTypes = { getValue: PropTypes.func };
 StatusCell.propTypes = { getValue: PropTypes.func };
 CheckCell.propTypes = { getValue: PropTypes.func, row: PropTypes.object };
+OTIndicatorCell.propTypes = { row: PropTypes.object };

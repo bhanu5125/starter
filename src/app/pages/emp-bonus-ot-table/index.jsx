@@ -53,6 +53,7 @@ export default function EmployeesDatatable() {
         department_name: staff.DEPARTMENT,
         ot: staff.ot,
         bonus: staff.bonus,
+        ot_days: staff.ot_days,
       }));
   
       // Update both original and filtered data
@@ -79,13 +80,14 @@ export default function EmployeesDatatable() {
   });
   const [globalFilter, setGlobalFilter] = useState("");
   const [sorting, setSorting] = useState([]);
+  const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
   const [columnVisibility, setColumnVisibility] = useLocalStorage("column-visibility-employees", {});
   const [columnPinning, setColumnPinning] = useLocalStorage("column-pinning-employees", {});
 
   const table = useReactTable({
     data: employees,
     columns,
-    state: { globalFilter, sorting, columnVisibility, columnPinning, tableSettings },
+    state: { globalFilter, sorting, pagination, columnVisibility, columnPinning, tableSettings },
     meta: {
       updateData: (rowIndex, columnId, value) => {
         setEmployees(old =>
@@ -97,10 +99,12 @@ export default function EmployeesDatatable() {
     },
     enableSorting: tableSettings.enableSorting,
     enableColumnFilters: tableSettings.enableColumnFilters,
+    autoResetPageIndex: false,
     getCoreRowModel: getCoreRowModel(),
     onGlobalFilterChange: setGlobalFilter,
     getFilteredRowModel: getFilteredRowModel(),
     onSortingChange: setSorting,
+    onPaginationChange: setPagination,
     getPaginationRowModel: getPaginationRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onColumnPinningChange: setColumnPinning,

@@ -52,16 +52,22 @@ export default function EmployeesDatatable() {
         surname: staff.SURNAME,
         department_name: staff.DEPARTMENT,
         staff_type: staff.StaffType,
-  // Invert: backend false = present (checked), true = absent (unchecked)
-  attendance: staff.attendance === false ? true : false,
+        // Invert: backend false = present (checked), true = absent (unchecked)
+        attendance: staff.attendance === false ? true : false,
         year: staff.Year,
+        isOT: staff.isOT || false, // Whether this specific date is an OT day for this employee
+        otCount: staff.otCount || 0 // Total OT count for the month
       }));
+
+      // Check if any employee has OT for this specific date
+      const hasOTForThisDate = normalizedData.some(staff => staff.isOT === true);
 
       // Update both original and filtered data
       setOriginalEmployees(normalizedData);
       setEmployees(normalizedData);
       setTableRefreshKey(prev => prev + 1); // Force table refresh
-      return normalizedData;
+      
+      return { data: normalizedData, hasOT: hasOTForThisDate };
       
     } catch (err) {
       console.error("Error fetching attendance data:", err);
