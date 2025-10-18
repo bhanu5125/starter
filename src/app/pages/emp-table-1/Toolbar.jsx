@@ -194,7 +194,7 @@ const Filters = ({
     { label: "All", value: "All" },
     ...Array.from({ length: 8 }, (_, i) => ({
       label: `Group ${String.fromCharCode(65 + i)}`,
-      value: i, // Store as number
+      value: i+1, // Store as number
     })),
   ];
 

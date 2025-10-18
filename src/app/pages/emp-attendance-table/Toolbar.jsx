@@ -210,7 +210,7 @@ export function Toolbar({
   // Staff type options (Groups A-H)
   const staffTypeOptions = [
     { label: "All", value: "All" },
-    ...Array.from({ length: 8 }, (_, i) => ({ label: `Group ${String.fromCharCode(65 + i)}`, value: i })),
+    ...Array.from({ length: 8 }, (_, i) => ({ label: `Group ${String.fromCharCode(65 + i)}`, value: i+1 })),
   ];
 
   const handleStaffTypeChange = (option) => {
