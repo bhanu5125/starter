@@ -166,7 +166,7 @@ const Filters = ({
   const [selectedStaffType, setSelectedStaffType] = useState("All");
   const [departmentOptions, setDepartmentOptions] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const isTSSDepartment = selectedDepartment === "TSS DATA ENTRY";
+  const isTSSDepartment = selectedDepartment === "TC DATA ENTRY";
 
   useEffect(() => {
     const fetchDepartments = async () => {
@@ -193,7 +193,7 @@ const Filters = ({
   const staffTypeOptions = [
     { label: "All", value: "All" },
     ...Array.from({ length: 8 }, (_, i) => ({
-      label: `Group ${i}`,
+      label: `Group ${String.fromCharCode(65 + i)}`,
       value: i, // Store as number
     })),
   ];

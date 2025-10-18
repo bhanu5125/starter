@@ -60,7 +60,7 @@ export function Toolbar({
   const [selectedStaffType, setSelectedStaffType] = useState("All");
 
   // Department id 4 corresponds to TSS DATA ENTRY in this screen
-  const isTSSDepartment = selectedDepartment === 4;
+  const isTSSDepartment = selectedDepartment === 3;
 
   // List of years.
   const years = Array.from({ length: 31 }, (_, i) => ({
@@ -207,10 +207,10 @@ export function Toolbar({
     setIsOT(shouldEnableOT);
   };
 
-  // Staff type options (Groups 0-7)
+  // Staff type options (Groups A-H)
   const staffTypeOptions = [
     { label: "All", value: "All" },
-    ...Array.from({ length: 8 }, (_, i) => ({ label: `Group ${i}`, value: i })),
+    ...Array.from({ length: 8 }, (_, i) => ({ label: `Group ${String.fromCharCode(65 + i)}`, value: i })),
   ];
 
   const handleStaffTypeChange = (option) => {
