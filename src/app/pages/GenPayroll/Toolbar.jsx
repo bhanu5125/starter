@@ -9,6 +9,7 @@ import { Listbox } from "components/shared/form/Listbox";
 import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
 const monthNames = [
   { label: "January", value: 1 },
@@ -25,15 +26,6 @@ const monthNames = [
   { label: "December", value: 12 },
 ];
 
-const departmentOptions = [
-  { label: "All", value: 0 },
-  { label: "TRIBE DEVELOPMENT", value: 1 },
-  { label: "TRIBE DESIGN", value: 2 },
-  { label: "TSS ADMIN", value: 3 },
-  { label: "TSS DATA ENTRY", value: 4 },
-  { label: "HTPL", value: 5 },
-];
-
 export function Toolbar({ table, setEmployees, fetchEmployees, selectedOptionalColumns, setSelectedOptionalColumns, columnOptions }) {
   const { isXs } = useBreakpointsContext();
   const isFullScreenEnabled = table.getState().tableSettings.enableFullScreen;
@@ -47,6 +39,29 @@ export function Toolbar({ table, setEmployees, fetchEmployees, selectedOptionalC
   const [selectedYear, setSelectedYear] = useState(currentYear);
   const [selectedMonth, setSelectedMonth] = useState(currentMonth);
   const [pEval, setPEval] = useState(2);
+  const [departments, setDepartments] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchDepartments = async () => {
+      setIsLoading(true);
+      try {
+        const response = await axios.get('https://tcs.trafficcounting.com/nodejs/api/get-deptname');
+        const data = response.data;
+        // Transform to match old structure: add "All" and format as { label, value }
+        const transformed = [
+          { label: "All", value: 0 },
+          ...data.map(item => ({ label: item.DeptName, value: item.ID }))
+        ];
+        setDepartments(transformed);
+      } catch (error) {
+        console.error('Error fetching departments:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchDepartments();
+  }, []);
 
   const years = Array.from({ length: 31 }, (_, i) => ({
     label: (2018 + i).toString(),
@@ -147,7 +162,7 @@ export function Toolbar({ table, setEmployees, fetchEmployees, selectedOptionalC
             Salary Report for{" "}
             {selectedDepartment === 0
               ? "All"
-              : departmentOptions.find((d) => d.value === selectedDepartment)
+              : departments.find((d) => d.value === selectedDepartment)
                   ?.label}{" "}
             - {selectedYear} -{" "}
             {selectedMonth
@@ -175,7 +190,8 @@ export function Toolbar({ table, setEmployees, fetchEmployees, selectedOptionalC
               handlePEvalChange={handlePEvalChange}
               years={years}
               months={monthNames}
-              departments={departmentOptions}
+              departments={departments}
+              isLoading={isLoading}
             />
             <div className="flex items-center space-x-3 rtl:space-x-reverse">
               <Button
@@ -238,7 +254,8 @@ export function Toolbar({ table, setEmployees, fetchEmployees, selectedOptionalC
               handlePEvalChange={handlePEvalChange}
               years={years}
               months={monthNames}
-              departments={departmentOptions}
+              departments={departments}
+              isLoading={isLoading}
             />
             <div className="flex items-center space-x-3 rtl:space-x-reverse">
             <Button
@@ -313,6 +330,7 @@ const Filters = ({
   years,
   months,
   departments,
+  isLoading,
 }) => {
   return (
     <div className="flex items-center gap-4 p-2">
@@ -323,6 +341,7 @@ const Filters = ({
         placeholder="Select Department"
         onChange={handleDepartmentChange}
         displayField="label"
+        disabled={isLoading}
       />
       <Listbox
         style={{ minWidth: "200px", maxWidth: "350px", width: "100%" }}

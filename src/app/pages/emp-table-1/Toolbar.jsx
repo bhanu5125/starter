@@ -26,6 +26,7 @@ import { employeeStatusOptions } from "./data";
 import { Listbox } from "components/shared/form/Listbox";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import axios from "axios";
 
 // ----------------------------------------------------------------------
 
@@ -163,15 +164,30 @@ const Filters = ({
   const [selectedDepartment, setSelectedDepartment] = useState("All");
   const [selectedStatus, setSelectedStatus] = useState("Active");
   const [selectedStaffType, setSelectedStaffType] = useState("All");
+  const [departmentOptions, setDepartmentOptions] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
   const isTSSDepartment = selectedDepartment === "TSS DATA ENTRY";
 
-  // Get unique department list from originalEmployees
-  const departmentOptions = [
-    { label: "All", value: "All" },
-    ...Array.from(
-      new Set(originalEmployees.map((emp) => emp.department_name).filter(Boolean))
-    ).map((dept) => ({ label: dept, value: dept })),
-  ];
+  useEffect(() => {
+    const fetchDepartments = async () => {
+      setIsLoading(true);
+      try {
+        const response = await axios.get('https://tcs.trafficcounting.com/nodejs/api/get-deptname');
+        const data = response.data;
+        // Transform to match old structure: add "All" and format as { label, value }
+        const transformed = [
+          { label: "All", value: "All" },
+          ...data.map(item => ({ label: item.DeptName, value: item.DeptName }))
+        ];
+        setDepartmentOptions(transformed);
+      } catch (error) {
+        console.error('Error fetching departments:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchDepartments();
+  }, []);
 
   // Staff type options
   const staffTypeOptions = [
@@ -235,6 +251,7 @@ const Filters = ({
         valueField="value"
         style={{ minWidth: 160, maxWidth: 240 }}
         placeholder="Select Department"
+        disabled={isLoading}
       />
       
       {/* Staff Type Listbox - Only show for TSS Data Entry */}

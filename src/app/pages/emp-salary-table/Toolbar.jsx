@@ -7,6 +7,7 @@ import { TableConfig } from "./TableConfig";
 import { useBreakpointsContext } from "app/contexts/breakpoint/context";
 import { Listbox } from "components/shared/form/Listbox";
 import { useState, useEffect } from "react";
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 export function Toolbar({ 
@@ -23,7 +24,30 @@ export function Toolbar({
   const isFullScreenEnabled = table?.getState()?.tableSettings?.enableFullScreen || false;
   const navigate = useNavigate();
   
-    const [selectedDepartment, setSelectedDepartment] = useState("All");
+  const [selectedDepartment, setSelectedDepartment] = useState("All");
+  const [departments, setDepartments] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchDepartments = async () => {
+      setIsLoading(true);
+      try {
+        const response = await axios.get('https://tcs.trafficcounting.com/nodejs/api/get-deptname');
+        const data = response.data;
+        // Transform to match old structure: add "All" and format as { label, value }
+        const transformed = [
+          { label: "All", value: "All" },
+          ...data.map(item => ({ label: item.DeptName, value: item.DeptName }))
+        ];
+        setDepartments(transformed);
+      } catch (error) {
+        console.error('Error fetching departments:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchDepartments();
+  }, []);
 
     // Sync Listbox display to 'All' when reset (when originalEmployees changes after reset)
     // This ensures the Listbox always shows the correct value after a reset/save
@@ -45,15 +69,6 @@ export function Toolbar({
   };
 
     // handleResetClick is now above, updated to force Listbox re-render
-
-  const departments = [
-    { label: "All", value: "All" },
-    { label: "TRIBE DEVELOPMENT", value: "TRIBE DEVELOPMENT" },
-    { label: "TRIBE DESIGN", value: "TRIBE DESIGN" },
-    { label: "TSS ADMIN", value: "TSS ADMIN" },
-    { label: "TSS DATA ENTRY", value: "TSS DATA ENTRY" },
-    { label: "HTPL", value: "HTPL" },
-  ];
 
   return (
     <div className="table-toolbar">
@@ -82,6 +97,7 @@ export function Toolbar({
                 placeholder="Select Department"
                 onChange={handleDepartmentChange}
                 displayField="label"
+                disabled={isLoading}
               />
               {/* Generate button removed: filtering is now automatic */}
             </div>
@@ -122,6 +138,7 @@ export function Toolbar({
               placeholder="Select Department"
               onChange={handleDepartmentChange}
               displayField="label"
+              disabled={isLoading}
             />
             {/* Generate button removed: filtering is now automatic */}
           </div>

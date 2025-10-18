@@ -331,14 +331,30 @@ const Filters = ({
   months,
   isAdmin,
 }) => {
-  const departments = [
-    { label: "All", value: "" },
-    { label: "TRIBE DEVELOPMENT", value: 1 },
-    { label: "TRIBE DESIGN", value: 2 },
-    { label: "TSS ADMIN", value: 3 },
-    { label: "TSS DATA ENTRY", value: 4 },
-    { label: "HTPL", value: 5 },
-  ];
+  const [departments, setDepartments] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchDepartments = async () => {
+      setIsLoading(true);
+      try {
+        const response = await axios.get('https://tcs.trafficcounting.com/nodejs/api/get-deptname');
+        const data = response.data;
+        // Transform to match old structure: add "All" and format as { label, value }
+        const transformed = [
+          { label: "All", value: "" },
+          ...data.map(item => ({ label: item.DeptName, value: item.ID }))
+        ];
+        setDepartments(transformed);
+      } catch (error) {
+        console.error('Error fetching departments:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchDepartments();
+  }, []);
+
   return (
     <div className="flex items-center gap-4 p-2">
       <Listbox
@@ -348,6 +364,7 @@ const Filters = ({
         onChange={handleDepartmentChange}
         placeholder="Select Department"
         displayField="label"
+        disabled={isLoading}
       />
       <Listbox
         style={{ minWidth: "120px", maxWidth: "150px", width: "100%" }}
