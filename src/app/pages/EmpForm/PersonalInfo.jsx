@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -10,19 +9,7 @@ import { Listbox } from "components/shared/form/Listbox";
 import { personalInfoSchema } from "./schema";
 import TextareaAutosize from "react-textarea-autosize";
 import { useNavigate } from "react-router-dom";
-
-const departments = [
-  { label: "TRIBE DEVELOPMENT", value: 1 },
-  { label: "TRIBE DESIGN", value: 2 },
-  { label: "TSS ADMIN", value: 3 },
-  { label: "TSS DATA ENTRY", value: 4 },
-  { label: "HTPL", value: 5 },
-];
-
-const activeStatuses = [
-  { label: "Active", value: 1 },
-  { label: "Inactive", value: 0 },
-];
+import { useState } from "react";
 
 const staffGroups = [
   { label: "1", value: 1 },
@@ -41,6 +28,26 @@ export function PersonalInfo({
   code,
   onSuccess,
 }) {
+  const [departments, setDepartments] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchDepartments = async () => {
+      setIsLoading(true);
+      try {
+        const response = await axios.get('https://tcs.trafficcounting.com/nodejs/api/get-deptname');
+        const data = response.data;
+        // Transform to match old structure: format as { label, value }
+        const transformed = data.map(item => ({ label: item.DeptName, value: item.ID }));
+        setDepartments(transformed);
+      } catch (error) {
+        console.error('Error fetching departments:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchDepartments();
+  }, []);
   const {
     register,
     handleSubmit,
@@ -72,7 +79,7 @@ export function PersonalInfo({
   console.log(defaultValues.DOJ);
   console.log(resolvedDefaults.DOJ);
   */
-}, [defaultValues, reset]);
+}, [defaultValues, reset, departments]);
 
   const navigate = useNavigate();
 
@@ -182,7 +189,7 @@ export function PersonalInfo({
             displayField="label"
             value={deptId}
             onChange={(val) => setValue("deptId", val)}
-            disabled={readOnly || isSubmitting}
+            disabled={readOnly || isSubmitting || isLoading}
             placeholder="Select Department"
             error={errors.deptId?.message}
           />
