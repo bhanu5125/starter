@@ -140,8 +140,9 @@ export function AuthProvider({ children }) {
   const verifySecretKey = async (secretKey) => {
     try {
       const response = await axios.post("https://tcs.trafficcounting.com/nodejs/api/verify-secret", { secretKey });
-      if (response.data === "SMS") {
+      if (response.data !== "INCORRECT") {
         dispatch({ type: "SECRET_KEY_VERIFIED" });
+        localStorage.setItem('Key', secretKey);
         return true;
       }
       throw new Error("Invalid secret key");

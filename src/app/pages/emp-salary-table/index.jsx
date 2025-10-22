@@ -22,6 +22,7 @@ import { fuzzyFilter } from "utils/react-table/fuzzyFilter";
 import { Toolbar } from "./Toolbar";
 import { columns } from "./columns";
 import { PaginationSection } from "components/shared/table/PaginationSection";
+import { l, p } from "react-router/dist/development/fog-of-war-CvttGpNz";
 
 export default function EmployeesDatatable() {
   const [originalEmployees, setOriginalEmployees] = useState([]);
@@ -79,7 +80,7 @@ export default function EmployeesDatatable() {
 
   const fetchData = async () => {
     try {
-      const res = await axios.get("https://tcs.trafficcounting.com/nodejs/api/get-salary");
+      const res = await axios.get("https://tcs.trafficcounting.com/nodejs/api/get-salary", { params: { pKey: localStorage.getItem("Key") || "" } });
       const data = res.data.map((staff) => ({
         StaffId: staff.SId,
         SalId: staff.SalId || staff.SId, // Use provided SalId or fallback to SId
@@ -115,7 +116,7 @@ export default function EmployeesDatatable() {
       }
   
       const payload = {
-        key: "Hr!$h!kesh",
+        pKey: localStorage.getItem("Key") || "",
         employees: employees.map(emp => ({
           SalId: emp.SalId,            // Ensure SalId is included
           StaffId: emp.SId,          // Ensure StaffId is included
@@ -129,7 +130,7 @@ export default function EmployeesDatatable() {
   
       if (response.data.success) {
         // Refresh data after a successful update
-        const refreshed = await axios.get("https://tcs.trafficcounting.com/nodejs/api/get-salary");
+        const refreshed = await axios.get("https://tcs.trafficcounting.com/nodejs/api/get-salary", {params: { pKey: localStorage.getItem("Key") || "" }});
         const data = refreshed.data.map((staff) => ({
           StaffId: staff.SId,
           SalId: staff.SalId || staff.SId, // Again, fallback to SId if SalId is missing
