@@ -22,7 +22,6 @@ import { fuzzyFilter } from "utils/react-table/fuzzyFilter";
 import { Toolbar } from "./Toolbar";
 import { columns } from "./columns";
 import { PaginationSection } from "components/shared/table/PaginationSection";
-import { l, p } from "react-router/dist/development/fog-of-war-CvttGpNz";
 
 export default function EmployeesDatatable() {
   const [originalEmployees, setOriginalEmployees] = useState([]);
