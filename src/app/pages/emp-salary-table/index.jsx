@@ -79,7 +79,7 @@ export default function EmployeesDatatable() {
 
   const fetchData = async () => {
     try {
-      const res = await axios.get("https://tcs.trafficcounting.com/nodejs/api/get-salary", { params: { pKey: localStorage.getItem("Key") || "" } });
+      const res = await axios.get("https://dev.trafficcounting.in/nodejs/api/get-salary", { params: { pKey: localStorage.getItem("Key") || "" } });
       const data = res.data.map((staff) => ({
         StaffId: staff.SId,
         SalId: staff.SalId || staff.SId, // Use provided SalId or fallback to SId
@@ -125,11 +125,11 @@ export default function EmployeesDatatable() {
         }))
       };
   
-      const response = await axios.put("https://tcs.trafficcounting.com/nodejs/api/update-salaries", payload);
+      const response = await axios.put("https://dev.trafficcounting.in/nodejs/api/update-salaries", payload);
   
       if (response.data.success) {
         // Refresh data after a successful update
-        const refreshed = await axios.get("https://tcs.trafficcounting.com/nodejs/api/get-salary", {params: { pKey: localStorage.getItem("Key") || "" }});
+        const refreshed = await axios.get("https://dev.trafficcounting.in/nodejs/api/get-salary", {params: { pKey: localStorage.getItem("Key") || "" }});
         const data = refreshed.data.map((staff) => ({
           StaffId: staff.SId,
           SalId: staff.SalId || staff.SId, // Again, fallback to SId if SalId is missing

@@ -26,7 +26,7 @@ export default function EmployeesDatatable() {
 
   const fetchEmployees = async (deptId = 0, year = new Date().getFullYear(), month = (new Date().getMonth() + 1), pPEVal = 2) => {
     try {
-      const response = await axios.get("https://tcs.trafficcounting.com/nodejs/api/get-report", {
+      const response = await axios.get("https://dev.trafficcounting.in/nodejs/api/get-report", {
         params: { pKey: localStorage.getItem("Key") || "", deptId, year, month, pPEVal },
       });
       console.log("Response data:", response); // Log the response data
