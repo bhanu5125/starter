@@ -90,7 +90,7 @@ export function AuthProvider({ children }) {
         const authToken = localStorage.getItem("authToken");
         if (authToken && isTokenValid(authToken)) {
           setSession(authToken);
-          const response = await axios.get("https://dev.trafficcounting.in/nodejs/user/profile");
+          const response = await axios.get("https://tcs.trafficcounting.com/nodejs/user/profile");
           dispatch({
             type: "INITIALIZE",
             payload: {
@@ -123,7 +123,7 @@ export function AuthProvider({ children }) {
   const login = async ({username, password}) => {
     dispatch({ type: "LOGIN_REQUEST" });
     try {
-      const response = await axios.post("https://dev.trafficcounting.in/nodejs/api/login", {username, password});
+      const response = await axios.post("https://tcs.trafficcounting.com/nodejs/api/login", {username, password});
       setSession(response.data.authToken);
       dispatch({
         type: "LOGIN_SUCCESS",
@@ -139,7 +139,7 @@ export function AuthProvider({ children }) {
 
   const verifySecretKey = async (secretKey) => {
     try {
-      const response = await axios.post("https://dev.trafficcounting.in/nodejs/api/verify-secret", { secretKey });
+      const response = await axios.post("https://tcs.trafficcounting.com/nodejs/api/verify-secret", { secretKey });
       if (response.data !== "INCORRECT") {
         dispatch({ type: "SECRET_KEY_VERIFIED" });
         localStorage.setItem('Key', secretKey);
