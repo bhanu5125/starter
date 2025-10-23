@@ -34,7 +34,7 @@ export function Toolbar({ table, setEmployees, fetchEmployees }) {
   const currentYear = currentDate.getFullYear();
   const currentMonth = monthNames[currentDate.getMonth()].value;
 
-  const [selectedDepartment, setSelectedDepartment] = useState("All");
+  const [selectedDepartment, setSelectedDepartment] = useState(0);
   const [selectedYear, setSelectedYear] = useState(currentYear);
   const [selectedMonth, setSelectedMonth] = useState(currentMonth);
   const [departments, setDepartments] = useState([]);
@@ -53,8 +53,8 @@ export function Toolbar({ table, setEmployees, fetchEmployees }) {
         const data = response.data;
         // Transform to match structure: add "All" and format as { label, value }
         const transformed = [
-          { label: "All", value: "All" },
-          ...data.map(item => ({ label: item.DeptName, value: item.DeptName }))
+          { label: "All", value: 0 },
+          ...data.map(item => ({ label: item.DeptName, value: item.ID }))
         ];
         setDepartments(transformed);
       } catch (error) {
@@ -67,7 +67,7 @@ export function Toolbar({ table, setEmployees, fetchEmployees }) {
   }, []);
 
   const handleDepartmentChange = (selectedOption) => {
-    const value = selectedOption?.value || "All";
+    const value = selectedOption?.value || 0;
     setSelectedDepartment(value);
     fetchEmployees(value, selectedYear, selectedMonth, 2);
   };
@@ -95,7 +95,7 @@ export function Toolbar({ table, setEmployees, fetchEmployees }) {
         <div className="min-w-0">
           <h2 className="truncate px-2 text-xl font-medium tracking-wide text-gray-800 dark:text-dark-50">
             PaySlip Reports for{" "}
-            {selectedDepartment === "All"
+            {selectedDepartment === 0
               ? "All"
               : departments.find((d) => d.value === selectedDepartment)
                   ?.label}{" "}
