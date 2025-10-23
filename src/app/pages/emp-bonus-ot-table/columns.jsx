@@ -12,12 +12,12 @@ import {
 const determineIsAdmin = () => {
   try {
     if (typeof window !== 'undefined') {
-      const adminValue = localStorage.getItem("isSecretKeyVerified");
+      const adminValue = sessionStorage.getItem("isSecretKeyVerified");
       return adminValue === "true";
     }
     return false;
   } catch (error) {
-    console.error("Error accessing localStorage:", error);
+    console.error("Error accessing sessionStorage:", error);
     return false;
   }
 };

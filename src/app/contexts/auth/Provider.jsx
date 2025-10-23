@@ -10,7 +10,7 @@ const initialState = {
   isAuthenticated: false,
   isLoading: false,
   isInitialized: false,
-  isSecretKeyVerified: localStorage.getItem('isSecretKeyVerified') === 'true' || false,
+  isSecretKeyVerified: sessionStorage.getItem('isSecretKeyVerified') === 'true' || false,
   errorMessage: null,
   user: null,
 };
@@ -24,7 +24,7 @@ const reducerHandlers = {
       isAuthenticated,
       isInitialized: true,
       isSecretKeyVerified: isSadmin 
-        ? localStorage.getItem('isSecretKeyVerified') === 'true'
+        ? sessionStorage.getItem('isSecretKeyVerified') === 'true'
         : true,
       user,
     };
@@ -39,13 +39,13 @@ const reducerHandlers = {
   LOGIN_SUCCESS: (state, action) => {
     const { user } = action.payload;
     const isSadmin = user?.username?.toLowerCase() === 'sadmin';
-    localStorage.setItem('username', user.username);
+    sessionStorage.setItem('username', user.username);
     return {
       ...state,
       isAuthenticated: true,
       isLoading: false,
       isSecretKeyVerified: isSadmin 
-        ? localStorage.getItem('isSecretKeyVerified') === 'true'
+        ? sessionStorage.getItem('isSecretKeyVerified') === 'true'
         : true,
       user,
     };
@@ -58,7 +58,7 @@ const reducerHandlers = {
   }),
 
   SECRET_KEY_VERIFIED: (state) => {
-    localStorage.setItem('isSecretKeyVerified', 'true');
+    sessionStorage.setItem('isSecretKeyVerified', 'true');
     return {
       ...state,
       isSecretKeyVerified: true,
@@ -66,7 +66,9 @@ const reducerHandlers = {
   },
 
   LOGOUT: (state) => {
-    localStorage.removeItem('isSecretKeyVerified');
+    sessionStorage.removeItem('isSecretKeyVerified');
+    sessionStorage.removeItem('username');
+    sessionStorage.removeItem('Key');
     return {
       ...state,
       isAuthenticated: false,
@@ -87,7 +89,7 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const initialize = async () => {
       try {
-        const authToken = localStorage.getItem("authToken");
+        const authToken = sessionStorage.getItem("authToken");
         if (authToken && isTokenValid(authToken)) {
           setSession(authToken);
           const response = await axios.get("https://tcs.trafficcounting.com/nodejs/user/profile");
@@ -118,6 +120,17 @@ export function AuthProvider({ children }) {
       }
     };
     initialize();
+
+    // Clear session when window/tab is closed
+    const handleBeforeUnload = () => {
+      sessionStorage.clear();
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
   }, []);
 
   const login = async ({username, password}) => {
@@ -142,7 +155,7 @@ export function AuthProvider({ children }) {
       const response = await axios.post("https://tcs.trafficcounting.com/nodejs/api/verify-secret", { secretKey });
       if (response.data !== "INCORRECT") {
         dispatch({ type: "SECRET_KEY_VERIFIED" });
-        localStorage.setItem('Key', secretKey);
+        sessionStorage.setItem('Key', secretKey);
         return true;
       }
       throw new Error("Invalid secret key");

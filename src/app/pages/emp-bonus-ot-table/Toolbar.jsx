@@ -40,7 +40,7 @@ export function Toolbar({
   const navigate = useNavigate();
 
   // Check admin status.
-  const isAdmin = localStorage.getItem("isSecretKeyVerified") === "true";
+  const isAdmin = sessionStorage.getItem("isSecretKeyVerified") === "true";
 
   // Get current date values.
   const now = new Date();
