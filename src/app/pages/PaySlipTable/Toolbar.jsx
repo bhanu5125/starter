@@ -6,7 +6,7 @@ import { Button, Input } from "components/ui";
 import { TableConfig } from "./TableConfig";
 import { useBreakpointsContext } from "app/contexts/breakpoint/context";
 import { Listbox } from "components/shared/form/Listbox";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
@@ -25,15 +25,6 @@ const monthNames = [
   { label: "December", value: 12 },
 ];
 
-const departmentOptions = [
-  { label: "All", value: 0 },
-  { label: "TRIBE DEVELOPMENT", value: 1 },
-  { label: "TRIBE DESIGN", value: 2 },
-  { label: "TSS ADMIN", value: 3 },
-  { label: "TSS DATA ENTRY", value: 4 },
-  { label: "HTPL", value: 5 },
-];
-
 export function Toolbar({ table, setEmployees, fetchEmployees }) {
   const { isXs } = useBreakpointsContext();
   const isFullScreenEnabled = table.getState().tableSettings.enableFullScreen;
@@ -43,17 +34,40 @@ export function Toolbar({ table, setEmployees, fetchEmployees }) {
   const currentYear = currentDate.getFullYear();
   const currentMonth = monthNames[currentDate.getMonth()].value;
 
-  const [selectedDepartment, setSelectedDepartment] = useState(0);
+  const [selectedDepartment, setSelectedDepartment] = useState("All");
   const [selectedYear, setSelectedYear] = useState(currentYear);
   const [selectedMonth, setSelectedMonth] = useState(currentMonth);
+  const [departments, setDepartments] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const years = Array.from({ length: 31 }, (_, i) => ({
     label: (2018 + i).toString(),
     value: 2018 + i,
   }));
 
+  useEffect(() => {
+    const fetchDepartments = async () => {
+      setIsLoading(true);
+      try {
+        const response = await axios.get('https://tcs.trafficcounting.com/nodejs/api/get-deptname');
+        const data = response.data;
+        // Transform to match structure: add "All" and format as { label, value }
+        const transformed = [
+          { label: "All", value: "All" },
+          ...data.map(item => ({ label: item.DeptName, value: item.DeptName }))
+        ];
+        setDepartments(transformed);
+      } catch (error) {
+        console.error('Error fetching departments:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchDepartments();
+  }, []);
+
   const handleDepartmentChange = (selectedOption) => {
-    const value = selectedOption?.value || 0;
+    const value = selectedOption?.value || "All";
     setSelectedDepartment(value);
     fetchEmployees(value, selectedYear, selectedMonth, 2);
   };
@@ -81,9 +95,9 @@ export function Toolbar({ table, setEmployees, fetchEmployees }) {
         <div className="min-w-0">
           <h2 className="truncate px-2 text-xl font-medium tracking-wide text-gray-800 dark:text-dark-50">
             PaySlip Reports for{" "}
-            {selectedDepartment === 0
+            {selectedDepartment === "All"
               ? "All"
-              : departmentOptions.find((d) => d.value === selectedDepartment)
+              : departments.find((d) => d.value === selectedDepartment)
                   ?.label}{" "}
             - {selectedYear} -{" "}
             {selectedMonth
@@ -109,7 +123,8 @@ export function Toolbar({ table, setEmployees, fetchEmployees }) {
               handleMonthChange={handleMonthChange}
               years={years}
               months={monthNames}
-              departments={departmentOptions}
+              departments={departments}
+              isLoading={isLoading}
             />
           </div>
         </>
@@ -129,7 +144,8 @@ export function Toolbar({ table, setEmployees, fetchEmployees }) {
             handleMonthChange={handleMonthChange}
             years={years}
             months={monthNames}
-            departments={departmentOptions}
+            departments={departments}
+            isLoading={isLoading}
           />
           <div className="flex items-center space-x-3 rtl:space-x-reverse">
               <Button
@@ -174,6 +190,7 @@ const Filters = ({
   years,
   months,
   departments,
+  isLoading,
 }) => {
   return (
     <div className="flex items-center gap-4 p-2">
@@ -184,6 +201,7 @@ const Filters = ({
         placeholder="Select Department"
         onChange={handleDepartmentChange}
         displayField="label"
+        disabled={isLoading}
       />
       <Listbox
         style={{ minWidth: "200px", maxWidth: "350px", width: "100%" }}
