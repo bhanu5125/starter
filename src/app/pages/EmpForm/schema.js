@@ -9,7 +9,18 @@ export const personalInfoSchema = Yup.object().shape({
   secondaryPhone: Yup.string().trim().required("Secondary Phone is required"),
   Aadhaar: Yup.string().trim().required("Aadhaar is required"),
   DOJ: Yup.date().required("Date of Joining is required"),
-  DOR: Yup.date().nullable(), // Date of Resignation (optional)
+  DOR: Yup.date()
+    .nullable()
+    .transform((value, originalValue) => {
+      // If the value is an empty array or empty string, return null
+      if (Array.isArray(originalValue) && originalValue.length === 0) {
+        return null;
+      }
+      if (originalValue === '' || originalValue === null || originalValue === undefined) {
+        return null;
+      }
+      return value;
+    }), // Date of Resignation (optional)
   resignationReason: Yup.string().trim(), // Reason for Resignation (optional)
   deptId: Yup.object().shape({
     label: Yup.string().required(),

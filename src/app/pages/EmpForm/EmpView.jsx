@@ -13,18 +13,23 @@ export default function EmpView() {
     const fetchData = async () => {
       try {
         const { data } = await axios.get(
-          `https://tcs.trafficcounting.com/nodejs/api/get-staff/${code}`
+          `https://dev.trafficcounting.in/nodejs/api/get-staff/${code}`
         );
+        console.log("Fetched Data:", data);
         if (data) {
           const { staff, tblsourcebk } = data;
-          const parseDMY = (str) => {
-            if (!str) return null;
-            const [d, m, y] = str.split("-");
-            const dt = new Date(+y, +m - 1, +d);
-            return isNaN(dt) ? null : dt;
+          const formatDateForMySQL = (date) => {
+            const istOffset = 5.5 * 60 * 60 * 1000; // IST is UTC +5:30
+            const istDate = new Date(new Date(date).getTime() + istOffset);
+
+            const day = String(istDate.getDate()).padStart(2, "0");
+            const month = String(istDate.getMonth() + 1).padStart(2, "0"); // Months are 0-based
+            const year = istDate.getFullYear();
+
+            return `${year}-${month}-${day}`;
           };
-          const dojDate = parseDMY(staff.DOJ);
-          const dorDate = parseDMY(staff.DOR);
+          const dojDate = formatDateForMySQL(staff.DOJ);
+          const dorDate = staff.DOR === null ? null : formatDateForMySQL(staff.DOR);
 
           const deptId = staff.DeptId
             ? parseInt(staff.DeptId, 10)
@@ -50,6 +55,7 @@ export default function EmpView() {
             Aadhaar: tblsourcebk?.Aadhar_Number,
             AccountNumber: tblsourcebk?.Bank_Acc_No,
             BankName: tblsourcebk?.Bank_Name,
+            Branch: tblsourcebk?.Branch,
             IFSC: tblsourcebk?.IFSC_Code,
             code,
             StaffType: staff.StaffType,

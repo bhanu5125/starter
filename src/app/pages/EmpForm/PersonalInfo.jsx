@@ -35,7 +35,7 @@ export function PersonalInfo({
     const fetchDepartments = async () => {
       setIsLoading(true);
       try {
-        const response = await axios.get('https://tcs.trafficcounting.com/nodejs/api/get-deptname');
+        const response = await axios.get('https://dev.trafficcounting.in/nodejs/api/get-deptname');
         const data = response.data;
         // Transform to match old structure: format as { label, value }
         const transformed = data.map(item => ({ label: item.DeptName, value: item.ID }));
@@ -64,13 +64,24 @@ export function PersonalInfo({
     },
   });
 
+  const formatDateForMySQL = (date) => {
+  const istOffset = 5.5 * 60 * 60 * 1000; // IST is UTC +5:30
+  const istDate = new Date(new Date(date).getTime() + istOffset);
+
+  const day = String(istDate.getDate()).padStart(2, "0");
+  const month = String(istDate.getMonth() + 1).padStart(2, "0"); // Months are 0-based
+  const year = istDate.getFullYear();
+
+  return `${year}-${month}-${day}`;
+};
+
   useEffect(() => {
   const resolvedDefaults = {
     ...defaultValues,
     deptId: departments.find((d) => d.value === defaultValues?.deptId) || null,
     groupNo: staffGroups.find((g) => g.value === defaultValues?.StaffType) || null,
-    DOJ: defaultValues?.DOJ ? new Date(defaultValues.DOJ) : null,
-    DOR: defaultValues?.DOR ? new Date(defaultValues.DOR) : null,
+    DOJ: defaultValues?.DOJ === null ? null : formatDateForMySQL(defaultValues.DOJ),
+    DOR: defaultValues?.DOR === null ? null : formatDateForMySQL(defaultValues.DOR),
   };
   reset(resolvedDefaults);
 
@@ -78,18 +89,17 @@ export function PersonalInfo({
 
   const navigate = useNavigate();
 
-  function formatDate(dateString) {
-  if (!dateString) return null;
-  const date = new Date(dateString);
-  return date.toISOString().split('T')[0];
-}
-
   const deptId = watch("deptId");
   const DOJ = watch("DOJ");
   const DOR = watch("DOR");
 
   const onSubmit = async (data) => {
     try {
+      // Helper function to check if DOR is valid
+      const isValidDOR = (dor) => {
+        return dor && !Array.isArray(dor) && dor !== '' && !isNaN(new Date(dor).getTime());
+      };
+
       const formData = {
         tblsourcebk: {
           Emp_FName: data.firstName,
@@ -99,7 +109,8 @@ export function PersonalInfo({
           Aadhar_Number: data.Aadhaar,
           Emp_P_No: data.primaryPhone,
           Emp_A_No: data.secondaryPhone,
-          DOJ: formatDate(data.DOJ),
+          DOJ: formatDateForMySQL(data.DOJ),
+          DOR: isValidDOR(data.DOR) ? formatDateForMySQL(data.DOR) : null,
           Bank_Acc_No: data.AccountNumber,
           IFSC_Code: data.IFSC,
           Dept: data.deptId?.value,
@@ -116,7 +127,8 @@ export function PersonalInfo({
           SecondaryPhone: data.secondaryPhone,
           IsActive: data.isActive?.value ?? 1,
           StaffType: data.groupNo?.value ?? 0,
-          DOJ: formatDate(data.DOJ),
+          DOJ: formatDateForMySQL(data.DOJ),
+          DOR: isValidDOR(data.DOR) ? formatDateForMySQL(data.DOR) : null,
           DeptId: data.deptId?.value,
           ModifiedDate: new Date().toISOString(),
           ModifiedBy: 1,
@@ -127,8 +139,8 @@ export function PersonalInfo({
       console.log("Form Data:", formData);
 
       const endpoint = isEditMode
-        ? `https://tcs.trafficcounting.com/nodejs/api/update-staff/${code}`
-        : "https://tcs.trafficcounting.com/nodejs/api/submit-form";
+        ? `https://dev.trafficcounting.in/nodejs/api/update-staff/${code}`
+        : "https://dev.trafficcounting.in/nodejs/api/submit-form";
 
       const method = isEditMode ? "PUT" : "POST";
       const response = await axios({

@@ -14,7 +14,7 @@ const KYCForm = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(`https://tcs.trafficcounting.com/nodejs/api/get-salary-calc/`);
+        const response = await axios.get(`https://dev.trafficcounting.in/nodejs/api/get-salary-calc/`);
           console.log("Formatted data:", response.data);
           const transformedData = {
             Basic: response.data[0].Basic || "",
