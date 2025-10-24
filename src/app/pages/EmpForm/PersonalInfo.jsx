@@ -12,13 +12,13 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 const staffGroups = [
-  { label: "1", value: 1 },
-  { label: "2", value: 2 },
-  { label: "3", value: 3 },
-  { label: "4", value: 4 },
-  { label: "5", value: 5 },
-  { label: "6", value: 6 },
-  { label: "7", value: 7 },
+  { label: "A", value: 1 },
+  { label: "B", value: 2 },
+  { label: "C", value: 3 },
+  { label: "D", value: 4 },
+  { label: "E", value: 5 },
+  { label: "F", value: 6 },
+  { label: "G", value: 7 },
 ];
 
 export function PersonalInfo({
@@ -35,7 +35,7 @@ export function PersonalInfo({
     const fetchDepartments = async () => {
       setIsLoading(true);
       try {
-        const response = await axios.get('https://tcs.trafficcounting.com/nodejs/api/get-deptname');
+        const response = await axios.get('https://dev.trafficcounting.in/nodejs/api/get-deptname');
         const data = response.data;
         // Transform to match old structure: format as { label, value }
         const transformed = data.map(item => ({ label: item.DeptName, value: item.ID }));
@@ -73,12 +73,7 @@ export function PersonalInfo({
     DOR: defaultValues?.DOR ? new Date(defaultValues.DOR) : null,
   };
   reset(resolvedDefaults);
-  /*
-  console.log("Default Values:", defaultValues);
-  console.log("Resolved Defaults on Reset:", resolvedDefaults);
-  console.log(defaultValues.DOJ);
-  console.log(resolvedDefaults.DOJ);
-  */
+
 }, [defaultValues, reset, departments]);
 
   const navigate = useNavigate();
@@ -132,8 +127,8 @@ export function PersonalInfo({
       console.log("Form Data:", formData);
 
       const endpoint = isEditMode
-        ? `https://tcs.trafficcounting.com/nodejs/api/update-staff/${code}`
-        : "https://tcs.trafficcounting.com/nodejs/api/submit-form";
+        ? `https://dev.trafficcounting.in/nodejs/api/update-staff/${code}`
+        : "https://dev.trafficcounting.in/nodejs/api/submit-form";
 
       const method = isEditMode ? "PUT" : "POST";
       const response = await axios({
@@ -194,7 +189,7 @@ export function PersonalInfo({
             error={errors.deptId?.message}
           />
 
-          {deptId?.value === 4 && (
+          {deptId?.value === 3 && (
             <Listbox
               label="Staff Group"
               data={staffGroups}

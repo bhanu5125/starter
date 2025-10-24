@@ -23,7 +23,7 @@ export function PersonalInfo({ defaultValues, onSuccess }) {
   const onSubmit = async (data) => {
     try {
       const response = await axios.put(
-        "https://tcs.trafficcounting.com/nodejs/api/update-salary-calc/",
+        "https://dev.trafficcounting.in/nodejs/api/update-salary-calc/",
         data
       );
 

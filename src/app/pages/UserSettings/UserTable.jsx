@@ -12,7 +12,7 @@ export default function UserTable() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios.get("https://tcs.trafficcounting.com/nodejs/api/get-users")
+    axios.get("https://dev.trafficcounting.in/nodejs/api/get-users")
       .then((response) => {
         setUsers(response.data);
         console.log(response.data); // Log the response data directly
@@ -23,7 +23,7 @@ export default function UserTable() {
   const handleEditClick = async (UserId, username) => {
     try {
       console.log("Sending UserId:", UserId); // Debug log
-      const response = await axios.post("https://tcs.trafficcounting.com/nodejs/api/generate-token", { UserId });
+      const response = await axios.post("https://dev.trafficcounting.in/nodejs/api/generate-token", { UserId });
       console.log("Token received:", response.data.token); // Debug log
       const { token } = response.data;
       navigate(`/forms/user-form/${UserId}`, { state: { token, username } });
