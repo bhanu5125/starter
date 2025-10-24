@@ -35,7 +35,7 @@ export function PersonalInfo({
     const fetchDepartments = async () => {
       setIsLoading(true);
       try {
-        const response = await axios.get('https://dev.trafficcounting.in/nodejs/api/get-deptname');
+        const response = await axios.get('https://tcs.trafficcounting.com/nodejs/api/get-deptname');
         const data = response.data;
         // Transform to match old structure: format as { label, value }
         const transformed = data.map(item => ({ label: item.DeptName, value: item.ID }));
@@ -139,8 +139,8 @@ export function PersonalInfo({
       console.log("Form Data:", formData);
 
       const endpoint = isEditMode
-        ? `https://dev.trafficcounting.in/nodejs/api/update-staff/${code}`
-        : "https://dev.trafficcounting.in/nodejs/api/submit-form";
+        ? `https://tcs.trafficcounting.com/nodejs/api/update-staff/${code}`
+        : "https://tcs.trafficcounting.com/nodejs/api/submit-form";
 
       const method = isEditMode ? "PUT" : "POST";
       const response = await axios({

@@ -46,7 +46,7 @@ export function Toolbar({ table, setEmployees, fetchEmployees, selectedOptionalC
     const fetchDepartments = async () => {
       setIsLoading(true);
       try {
-        const response = await axios.get('https://dev.trafficcounting.in/nodejs/api/get-deptname');
+        const response = await axios.get('https://tcs.trafficcounting.com/nodejs/api/get-deptname');
         const data = response.data;
         // Transform to match old structure: add "All" and format as { label, value }
         const transformed = [
@@ -111,7 +111,7 @@ export function Toolbar({ table, setEmployees, fetchEmployees, selectedOptionalC
   
     try {
       const response = await axios.get(
-        `https://dev.trafficcounting.in/nodejs/api/export-${reportType}?${params.toString()}`,
+        `https://tcs.trafficcounting.com/nodejs/api/export-${reportType}?${params.toString()}`,
         {
           responseType: "blob", // Important for binary responses
         }
