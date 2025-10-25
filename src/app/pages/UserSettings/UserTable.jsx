@@ -52,9 +52,9 @@ export default function UserTable() {
           {users.map((user, index) => (
             <Tr key={user.UserId}>
               <Td className="ltr:rounded-l-lg rtl:rounded-r-lg">{index + 1}</Td>
-              <Td>{user.Username}</Td>
+              <Td>{user.UserName}</Td>
               <Td className="ltr:rounded-r-lg rtl:rounded-l-lg">
-                <Button onClick={() => handleEditClick(user.UserId, user.Username)}>Edit</Button>
+                <Button onClick={() => handleEditClick(user.UserId, user.UserName)}>Edit</Button>
               </Td>
             </Tr>
           ))}
