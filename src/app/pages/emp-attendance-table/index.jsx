@@ -140,6 +140,11 @@ export default function EmployeesDatatable() {
   });
   useLockScrollbar(tableSettings.enableFullScreen);
 
+  // Function to reset pagination to first page
+  const resetToFirstPage = () => {
+    setPagination(prev => ({ ...prev, pageIndex: 0 }));
+  };
+
   return (
     <Page title="Attendance Management">
       <div className="transition-content w-full pb-5">
@@ -158,6 +163,7 @@ export default function EmployeesDatatable() {
             fetchAttendanceData={fetchAttendanceData}
             hasUnsavedChanges={hasUnsavedChanges}
             setHasUnsavedChanges={setHasUnsavedChanges}
+            resetToFirstPage={resetToFirstPage}
           />
           <div
             className={clsx(

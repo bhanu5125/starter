@@ -36,6 +36,7 @@ export function Toolbar({
   fetchAttendanceData,
   hasUnsavedChanges = false,
   setHasUnsavedChanges = () => {},
+  resetToFirstPage = () => {},
 }) {
   const [isOT, setIsOT] = useState(false); // OT checkbox state
   const { isXs } = useBreakpointsContext();
@@ -152,6 +153,7 @@ export function Toolbar({
     }
     setIsTableLoading(false);
     setHasUnsavedChanges(false); // Reset unsaved changes flag
+    resetToFirstPage(); // Reset to page 1 when department changes
   };
 
   const handleYearChange = async (selectedOption) => {
@@ -177,6 +179,7 @@ export function Toolbar({
       }
       setIsTableLoading(false);
       setHasUnsavedChanges(false);
+      resetToFirstPage(); // Reset to page 1 when year changes
     }
   };
 
@@ -203,6 +206,7 @@ export function Toolbar({
       }
       setIsTableLoading(false);
       setHasUnsavedChanges(false);
+      resetToFirstPage(); // Reset to page 1 when month changes
     }
   };
 
@@ -229,6 +233,7 @@ export function Toolbar({
       }
       setIsTableLoading(false);
       setHasUnsavedChanges(false);
+      resetToFirstPage(); // Reset to page 1 when date changes
     }
   };
 
@@ -272,6 +277,7 @@ export function Toolbar({
         });
       }
       setEmployees(filteredData);
+      resetToFirstPage(); // Reset to page 1 when group changes
     }
   };
 
@@ -650,6 +656,7 @@ Toolbar.propTypes = {
   fetchAttendanceData: PropTypes.func.isRequired,
   hasUnsavedChanges: PropTypes.bool,
   setHasUnsavedChanges: PropTypes.func,
+  resetToFirstPage: PropTypes.func,
 };
 
 SearchInput.propTypes = {
