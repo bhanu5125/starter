@@ -21,26 +21,21 @@ export function TextCell({ getValue }) {
   );
 }
 
-export function CheckCell({ getValue, row }) {
+export function CheckCell({ getValue, row, column, table }) {
   const attendanceStatus = getValue();  // boolean: true = present, false = absent
 
-  // New logic: checked = present, unchecked = absent
-  const [checked, setChecked] = React.useState(attendanceStatus);
-
   const handleChange = () => {
-    const newChecked = !checked;
-    setChecked(newChecked);
-    // If checked (present), attendance = true (present)
-    // If unchecked (absent), attendance = false (absent)
-    row.original.attendance = newChecked;
+    const newChecked = !attendanceStatus;
+    // Update the data in the table using the meta updateData function
+    table.options.meta?.updateData(row.index, column.id, newChecked);
   };
 
   return (
     <div className="flex justify-center">
       <Checkbox 
-        checked={checked}
+        checked={attendanceStatus}
         onChange={handleChange}
-        title={checked ? "Present" : "Absent"}
+        title={attendanceStatus ? "Present" : "Absent"}
       />
     </div>
   );
@@ -105,5 +100,5 @@ DateCell.propTypes = { getValue: PropTypes.func };
 EmployeeNameCell.propTypes = { row: PropTypes.object, getValue: PropTypes.func };
 DepartmentCell.propTypes = { getValue: PropTypes.func };
 StatusCell.propTypes = { getValue: PropTypes.func };
-CheckCell.propTypes = { getValue: PropTypes.func, row: PropTypes.object };
+CheckCell.propTypes = { getValue: PropTypes.func, row: PropTypes.object, column: PropTypes.object, table: PropTypes.object };
 OTIndicatorCell.propTypes = { row: PropTypes.object };

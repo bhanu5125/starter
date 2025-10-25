@@ -192,7 +192,7 @@ const Filters = ({
   // Staff type options
   const staffTypeOptions = [
     { label: "All", value: "All" },
-    ...Array.from({ length: 8 }, (_, i) => ({
+    ...Array.from({ length: 7 }, (_, i) => ({
       label: `Group ${String.fromCharCode(65 + i)}`,
       value: i+1, // Store as number
     })),

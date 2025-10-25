@@ -34,6 +34,8 @@ export function Toolbar({
   setEmployees = () => {},
   originalEmployees = [],
   fetchAttendanceData,
+  hasUnsavedChanges = false,
+  setHasUnsavedChanges = () => {},
 }) {
   const [isOT, setIsOT] = useState(false); // OT checkbox state
   const { isXs } = useBreakpointsContext();
@@ -127,6 +129,17 @@ export function Toolbar({
 
   const handleDepartmentChange = async (selectedOption) => {
     const value = selectedOption?.value || "";
+    
+    // Check for unsaved changes before switching
+    if (hasUnsavedChanges) {
+      const confirmSwitch = window.confirm(
+        "You have unsaved changes. Switching departments will discard them. Do you want to continue?"
+      );
+      if (!confirmSwitch) {
+        return; // Don't switch departments
+      }
+    }
+    
     setSelectedDepartment(value);
     setSelectedStaffType("All");
     const dateStr = `${selectedYear}-${selectedMonth}-${selectedDate}`;
@@ -138,10 +151,21 @@ export function Toolbar({
       setIsOT(false);
     }
     setIsTableLoading(false);
+    setHasUnsavedChanges(false); // Reset unsaved changes flag
   };
 
   const handleYearChange = async (selectedOption) => {
     if (isAdmin && selectedOption) {
+      // Check for unsaved changes before switching
+      if (hasUnsavedChanges) {
+        const confirmSwitch = window.confirm(
+          "You have unsaved changes. Changing the year will discard them. Do you want to continue?"
+        );
+        if (!confirmSwitch) {
+          return;
+        }
+      }
+      
       setSelectedYear(selectedOption.value);
       const dateStr = `${selectedOption.value}-${selectedMonth}-${selectedDate}`;
       setIsTableLoading(true);
@@ -152,11 +176,22 @@ export function Toolbar({
         setIsOT(false);
       }
       setIsTableLoading(false);
+      setHasUnsavedChanges(false);
     }
   };
 
   const handleMonthChange = async (selectedOption) => {
     if (isAdmin && selectedOption) {
+      // Check for unsaved changes before switching
+      if (hasUnsavedChanges) {
+        const confirmSwitch = window.confirm(
+          "You have unsaved changes. Changing the month will discard them. Do you want to continue?"
+        );
+        if (!confirmSwitch) {
+          return;
+        }
+      }
+      
       setSelectedMonth(selectedOption.value);
       const dateStr = `${selectedYear}-${selectedOption.value}-${selectedDate}`;
       setIsTableLoading(true);
@@ -167,11 +202,22 @@ export function Toolbar({
         setIsOT(false);
       }
       setIsTableLoading(false);
+      setHasUnsavedChanges(false);
     }
   };
 
   const handleDateChange = async (selectedOption) => {
     if (isAdmin && selectedOption) {
+      // Check for unsaved changes before switching
+      if (hasUnsavedChanges) {
+        const confirmSwitch = window.confirm(
+          "You have unsaved changes. Changing the date will discard them. Do you want to continue?"
+        );
+        if (!confirmSwitch) {
+          return;
+        }
+      }
+      
       setSelectedDate(selectedOption.value);
       const dateStr = `${selectedYear}-${selectedMonth}-${selectedOption.value}`;
       setIsTableLoading(true);
@@ -182,6 +228,7 @@ export function Toolbar({
         setIsOT(false);
       }
       setIsTableLoading(false);
+      setHasUnsavedChanges(false);
     }
   };
 
@@ -207,10 +254,10 @@ export function Toolbar({
     setIsOT(shouldEnableOT);
   };
 
-  // Staff type options (Groups A-H)
+  // Staff type options (Groups A-G)
   const staffTypeOptions = [
     { label: "All", value: "All" },
-    ...Array.from({ length: 8 }, (_, i) => ({ label: `Group ${String.fromCharCode(65 + i)}`, value: i+1 })),
+    ...Array.from({ length: 7 }, (_, i) => ({ label: `Group ${String.fromCharCode(65 + i)}`, value: i+1 })),
   ];
 
   const handleStaffTypeChange = (option) => {
@@ -286,6 +333,31 @@ export function Toolbar({
 
       console.log("Save response:", response.data);
       alert("Attendance data saved successfully!");
+      
+      // Reset unsaved changes flag
+      setHasUnsavedChanges(false);
+      
+      // Refresh the table after successful save
+      const dateStr = `${selectedYear}-${selectedMonth}-${selectedDate}`;
+      const result = await fetchAttendanceData(dateStr, selectedDepartment);
+      
+      // result is an object { data, hasOT }, not an array
+      if (result && result.hasOT) {
+        setIsOT(true);
+      } else {
+        setIsOT(false);
+      }
+      
+      // Apply staff type filter if TSS department is selected
+      // Note: fetchAttendanceData already updates the employees state,
+      // so we only need to apply additional filtering if needed
+      if (isTSSDepartment && selectedStaffType !== "All" && result && result.data) {
+        const filteredData = result.data.filter((emp) => {
+          const staffType = emp.staff_type ?? 0;
+          return staffType === selectedStaffType;
+        });
+        setEmployees(filteredData);
+      }
     } catch (err) {
       console.error("Error saving attendance data:", err);
       alert("Failed to save attendance data. Please try again.");
@@ -576,6 +648,8 @@ Toolbar.propTypes = {
   setEmployees: PropTypes.func.isRequired,
   originalEmployees: PropTypes.array.isRequired,
   fetchAttendanceData: PropTypes.func.isRequired,
+  hasUnsavedChanges: PropTypes.bool,
+  setHasUnsavedChanges: PropTypes.func,
 };
 
 SearchInput.propTypes = {
