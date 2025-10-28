@@ -80,8 +80,8 @@ export function PersonalInfo({
     ...defaultValues,
     deptId: departments.find((d) => d.value === defaultValues?.deptId) || null,
     groupNo: staffGroups.find((g) => g.value === defaultValues?.StaffType) || null,
-    DOJ: defaultValues?.DOJ === null ? null : formatDateForMySQL(defaultValues.DOJ),
-    DOR: defaultValues?.DOR === null ? null : formatDateForMySQL(defaultValues.DOR),
+    DOJ: defaultValues?.DOJ == null ? null : formatDateForMySQL(defaultValues.DOJ),
+    DOR: defaultValues?.DOR == null ? null : formatDateForMySQL(defaultValues.DOR),
   };
   reset(resolvedDefaults);
 
@@ -155,6 +155,7 @@ export function PersonalInfo({
       if (response.status >= 200 && response.status < 300) {
         onSuccess();
       }
+      console.log("Form submission response:", response.data);
     } catch (error) {
       console.error("Form submission error:", {
         message: error.message,
@@ -164,8 +165,12 @@ export function PersonalInfo({
     }
   };
 
+  const onError = (errors) => {
+    console.log("Form validation errors:", errors);
+  };
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} autoComplete="off">
+    <form onSubmit={handleSubmit(onSubmit, onError)} autoComplete="off">
       <div className="mt-6 space-y-4">
         <h5 className="text-lg font-medium text-gray-800 dark:text-dark-100">
           Personal Information
