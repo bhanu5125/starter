@@ -29,7 +29,7 @@ export default function EmployeesDatatable() {
       const response = await axios.get("https://dev.trafficcounting.in/nodejs/api/get-report", {
        params: { pKey: sessionStorage.getItem("Key") || "", deptId, year, month, pPEVal }
       });
-      console.log("Response data:", response); // Log the response data
+      // console.log("Response data:", response); // Log the response data
       setEmployees(response.data);
     } catch (err) {
       console.error(err);

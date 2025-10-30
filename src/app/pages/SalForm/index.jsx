@@ -15,7 +15,7 @@ const KYCForm = () => {
     const fetchData = async () => {
       try {
         const response = await axios.get(`https://dev.trafficcounting.in/nodejs/api/get-salary-calc/`);
-          console.log("Formatted data:", response.data);
+          // console.log("Formatted data:", response.data);
           const transformedData = {
             Basic: response.data[0].Basic || "",
             HRA: response.data[0].HRA || "",

@@ -15,7 +15,7 @@ export default function EmpView() {
         const { data } = await axios.get(
           `https://dev.trafficcounting.in/nodejs/api/get-staff/${code}`
         );
-        console.log("Fetched Data:", data);
+        // console.log("Fetched Data:", data);
         if (data) {
           const { staff, tblsourcebk } = data;
           const formatDateForMySQL = (date) => {

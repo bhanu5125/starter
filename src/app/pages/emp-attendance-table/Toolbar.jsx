@@ -322,7 +322,7 @@ export function Toolbar({
           isOT: isOT
         };
       });
-      console.log("Attendance records to save (0=present, 1=absent):", records);
+      // console.log("Attendance records to save (0=present, 1=absent):", records);
 
       if (records.length === 0) {
         alert("No attendance records to save.");
@@ -337,7 +337,7 @@ export function Toolbar({
         },
       );
 
-      console.log("Save response:", response.data);
+      // console.log("Save response:", response.data);
       alert("Attendance data saved successfully!");
       
       // Reset unsaved changes flag

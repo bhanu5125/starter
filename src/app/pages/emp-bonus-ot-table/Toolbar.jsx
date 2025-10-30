@@ -145,7 +145,7 @@ export function Toolbar({
           bonus: bonus,
         };
       });
-      console.log("Bonus records to save:", records);
+      // console.log("Bonus records to save:", records);
 
       if (records.length === 0) {
         alert("No records to save.");
@@ -160,7 +160,7 @@ export function Toolbar({
         },
       );
 
-      console.log("Save response:", response.data);
+      // console.log("Save response:", response.data);
       alert("OT/Bonus data saved successfully!");
     } catch (err) {
       console.error("Error saving OT/Bonus data:", err);

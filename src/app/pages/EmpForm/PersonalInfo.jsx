@@ -136,7 +136,7 @@ export function PersonalInfo({
         resignationReason: data.resignationReason || "",
       };
 
-      console.log("Form Data:", formData);
+      // console.log("Form Data:", formData);
 
       const endpoint = isEditMode
         ? `https://dev.trafficcounting.in/nodejs/api/update-staff/${code}`
@@ -155,7 +155,7 @@ export function PersonalInfo({
       if (response.status >= 200 && response.status < 300) {
         onSuccess();
       }
-      console.log("Form submission response:", response.data);
+      // console.log("Form submission response:", response.data);
     } catch (error) {
       console.error("Form submission error:", {
         message: error.message,

@@ -50,7 +50,7 @@ export default function EmployeesDatatable() {
           modified_by: staff.ModifiedBy,
         }));
         
-        console.log("Fetched Employees Data:", data);
+        // console.log("Fetched Employees Data:", data);
         // Automatically sort employees based on Active status
         const sortedData = [...data].sort((b, a) => {
           return b.status.localeCompare(a.status); // "Active" first, "Inactive" last

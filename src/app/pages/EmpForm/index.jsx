@@ -8,7 +8,7 @@ const KYCForm = () => {
   const navigate = useNavigate();
 
   const handleSuccess = () => {
-    console.log("Employee added successfully!");
+    // console.log("Employee added successfully!");
     navigate("/tables/emp1");
   };
 

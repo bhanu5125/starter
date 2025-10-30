@@ -15,16 +15,16 @@ export default function UserTable() {
     axios.get("https://dev.trafficcounting.in/nodejs/api/get-users")
       .then((response) => {
         setUsers(response.data);
-        console.log(response.data); // Log the response data directly
+        // console.log(response.data); // Log the response data directly
       })
       .catch((error) => console.error("Error fetching users:", error));
   }, []);
 
   const handleEditClick = async (UserId, username) => {
     try {
-      console.log("Sending UserId:", UserId); // Debug log
+      // console.log("Sending UserId:", UserId); // Debug log
       const response = await axios.post("https://dev.trafficcounting.in/nodejs/api/generate-token", { UserId });
-      console.log("Token received:", response.data.token); // Debug log
+      // console.log("Token received:", response.data.token); // Debug log
       const { token } = response.data;
       navigate(`/forms/user-form/${UserId}`, { state: { token, username } });
     } catch (error) {

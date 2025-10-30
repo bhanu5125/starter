@@ -43,7 +43,7 @@ export default function EmployeesDatatable() {
         params: { date, deptId },
       });
 
-      console.log("Attendance data:", resp.data);
+      // console.log("Attendance data:", resp.data);
 
       // Normalize data to match table structure
       const normalizedData = resp.data.map(staff => ({

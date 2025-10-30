@@ -39,7 +39,7 @@ export default function EmployeesDatatable() {
         month,
         pPEVal
       }});
-      console.log("Response data:", response); // Log the response data
+      // console.log("Response data:", response); // Log the response data
       setEmployees(response.data);
     } catch (err) {
       console.error(err);

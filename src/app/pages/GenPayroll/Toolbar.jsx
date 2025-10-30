@@ -116,7 +116,7 @@ export function Toolbar({ table, setEmployees, fetchEmployees, selectedOptionalC
           responseType: "blob", // Important for binary responses
         }
       );
-      console.log("Export response:", response);
+      // console.log("Export response:", response);
   
       if (response.status !== 200) throw new Error("Export failed");
   
