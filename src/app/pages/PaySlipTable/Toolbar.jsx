@@ -51,7 +51,7 @@ export function Toolbar({ table, setEmployees, fetchEmployees }) {
     const fetchDepartments = async () => {
       setIsLoading(true);
       try {
-        const response = await axios.get('https://dev.trafficcounting.in/nodejs/api/get-deptname');
+        const response = await axios.get('https://tcs.trafficcounting.com/nodejs/api/get-deptname');
         const data = response.data;
         // Transform to match structure: add "All" and format as { label, value }
         const transformed = [

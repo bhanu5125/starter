@@ -40,7 +40,7 @@ export default function EmployeesDatatable() {
   const fetchAttendanceData = useCallback(async (date, deptId) => {
     setIsLoading(true);
     try {
-      const resp = await axios.get("https://dev.trafficcounting.in/nodejs/api/attendance", {
+      const resp = await axios.get("https://tcs.trafficcounting.com/nodejs/api/attendance", {
         params: { date, deptId },
       });
 

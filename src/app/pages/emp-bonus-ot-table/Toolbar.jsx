@@ -157,7 +157,7 @@ export function Toolbar({
 
       // Save OT/Bonus records
       const response = await axios.post(
-        "https://dev.trafficcounting.in/nodejs/api/ot-bonus",
+        "https://tcs.trafficcounting.com/nodejs/api/ot-bonus",
         {
           records,
         },
@@ -342,7 +342,7 @@ const Filters = ({
     const fetchDepartments = async () => {
       setIsLoading(true);
       try {
-        const response = await axios.get('https://dev.trafficcounting.in/nodejs/api/get-deptname');
+        const response = await axios.get('https://tcs.trafficcounting.com/nodejs/api/get-deptname');
         const data = response.data;
         // Transform to match old structure: add "All" and format as { label, value }
         const transformed = [

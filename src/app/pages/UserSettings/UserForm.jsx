@@ -37,7 +37,7 @@ function UserForm() {
   const onSubmit = async (data) => {
     try {
       const response = await axios.post(
-        "https://dev.trafficcounting.in/nodejs/api/update-password",
+        "https://tcs.trafficcounting.com/nodejs/api/update-password",
         { password: data.password },
         {
           headers: {
