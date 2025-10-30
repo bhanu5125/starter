@@ -10,6 +10,8 @@ import { personalInfoSchema } from "./schema";
 import TextareaAutosize from "react-textarea-autosize";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useErrorHandler } from "hooks";
+import { toast } from "sonner";
 
 const staffGroups = [
   { label: "A", value: 1 },
@@ -30,24 +32,26 @@ export function PersonalInfo({
 }) {
   const [departments, setDepartments] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const { handleError } = useErrorHandler();
 
   useEffect(() => {
     const fetchDepartments = async () => {
       setIsLoading(true);
       try {
-        const response = await axios.get('https://tcs.trafficcounting.com/nodejs/api/get-deptname');
+        const response = await axios.get('https://dev.trafficcounting.in/nodejs/api/get-deptname');
         const data = response.data;
         // Transform to match old structure: format as { label, value }
         const transformed = data.map(item => ({ label: item.DeptName, value: item.ID }));
         setDepartments(transformed);
       } catch (error) {
         console.error('Error fetching departments:', error);
+        handleError(error, "Failed to load departments.");
       } finally {
         setIsLoading(false);
       }
     };
     fetchDepartments();
-  }, []);
+  }, [handleError]);
   const {
     register,
     handleSubmit,
@@ -139,8 +143,8 @@ export function PersonalInfo({
       console.log("Form Data:", formData);
 
       const endpoint = isEditMode
-        ? `https://tcs.trafficcounting.com/nodejs/api/update-staff/${code}`
-        : "https://tcs.trafficcounting.com/nodejs/api/submit-form";
+        ? `https://dev.trafficcounting.in/nodejs/api/update-staff/${code}`
+        : "https://dev.trafficcounting.in/nodejs/api/submit-form";
 
       const method = isEditMode ? "PUT" : "POST";
       const response = await axios({
@@ -153,6 +157,7 @@ export function PersonalInfo({
       });
 
       if (response.status >= 200 && response.status < 300) {
+        toast.success(isEditMode ? "Staff updated successfully!" : "Staff added successfully!");
         onSuccess();
       }
       console.log("Form submission response:", response.data);
@@ -162,6 +167,7 @@ export function PersonalInfo({
         response: error.response?.data,
         status: error.response?.status,
       });
+      handleError(error, isEditMode ? "Failed to update staff." : "Failed to add staff.");
     }
   };
 

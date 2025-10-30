@@ -3,18 +3,20 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { PersonalInfo } from "./PersonalInfo";
+import { useErrorHandler } from "hooks";
 
 export default function EmpEdit() {
   const { code } = useParams();
   const navigate = useNavigate();
   const [employeeData, setEmployeeData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { handleError } = useErrorHandler();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const { data } = await axios.get(
-          `https://tcs.trafficcounting.com/nodejs/api/get-staff/${code}`
+          `https://dev.trafficcounting.in/nodejs/api/get-staff/${code}`
         );
         if (data) {
           const { staff, tblsourcebk } = data;
@@ -67,12 +69,13 @@ export default function EmpEdit() {
         }
       } catch (err) {
         console.error(err);
+        handleError(err, "Failed to load employee data.");
       } finally {
         setLoading(false);
       }
     };
     fetchData();
-  }, [code]);
+  }, [code, handleError]);
 
   const handleSuccess = () => navigate("/tables/emp1");
 

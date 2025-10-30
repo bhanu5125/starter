@@ -4,6 +4,8 @@ import { EnvelopeIcon, LockClosedIcon } from "@heroicons/react/24/outline";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router";
+import { useEffect } from "react";
+import { toast } from "sonner";
 
 // Local Imports
 import Logo from "assets/mainLogo.svg?react";
@@ -13,6 +15,7 @@ import { useAuthContext } from "app/contexts/auth/context";
 import { useThemeContext } from "app/contexts/theme/context";
 import { schema } from "./schema";
 import { Page } from "components/shared/Page";
+import { useErrorHandler } from "hooks";
 
 export default function SignIn() {
   const { login, errorMessage } = useAuthContext();
@@ -22,6 +25,7 @@ export default function SignIn() {
     darkColorScheme: dark,
     isDark,
   } = useThemeContext();
+  const { handleError } = useErrorHandler();
 
   const {
     register,
@@ -35,8 +39,15 @@ export default function SignIn() {
     },
   });
 
-  const onSubmit = (data) => {
-    login({
+  // Watch for errorMessage changes and show toast
+  useEffect(() => {
+    if (errorMessage) {
+      toast.error(errorMessage || "Login failed. Please check your credentials.");
+    }
+  }, [errorMessage]);
+
+  const onSubmit = async (data) => {
+    await login({
       username: data.username,
       password: data.password,
     });

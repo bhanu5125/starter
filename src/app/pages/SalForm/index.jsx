@@ -4,17 +4,19 @@ import { PersonalInfo } from "./PersonalInfo";
 import { useNavigate } from "react-router";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { useErrorHandler } from "hooks";
 
 const KYCForm = () => {
   const navigate = useNavigate();
   const [employeeData, setEmployeeData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { handleError } = useErrorHandler();
 
   // Fetch employee data
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(`https://tcs.trafficcounting.com/nodejs/api/get-salary-calc/`);
+        const response = await axios.get(`https://dev.trafficcounting.in/nodejs/api/get-salary-calc/`);
           console.log("Formatted data:", response.data);
           const transformedData = {
             Basic: response.data[0].Basic || "",
@@ -27,13 +29,14 @@ const KYCForm = () => {
           setEmployeeData(transformedData);
       } catch (error) {
         console.error("Error fetching employee data:", error);
+        handleError(error, "Failed to load salary calculation data.");
       } finally {
         setLoading(false);
       }
     };
   
     fetchData();
-  }, []);
+  }, [handleError]);
 
   // Handle form submission success
   const handleSuccess = () => {

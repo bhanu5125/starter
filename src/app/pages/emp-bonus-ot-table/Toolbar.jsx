@@ -10,6 +10,8 @@ import { Listbox } from "components/shared/form/Listbox";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router";
+import { useErrorHandler } from "hooks";
+import { toast } from "sonner";
 
 
 // Month names with correct values matching backend expectation (01-12)
@@ -38,6 +40,7 @@ export function Toolbar({
   const { isXs } = useBreakpointsContext();
   const isFullScreenEnabled = table.getState().tableSettings.enableFullScreen;
   const navigate = useNavigate();
+  const { handleError } = useErrorHandler();
 
   // Check admin status.
   const isAdmin = sessionStorage.getItem("isSecretKeyVerified") === "true";
@@ -154,17 +157,17 @@ export function Toolbar({
 
       // Save OT/Bonus records
       const response = await axios.post(
-        "https://tcs.trafficcounting.com/nodejs/api/ot-bonus",
+        "https://dev.trafficcounting.in/nodejs/api/ot-bonus",
         {
           records,
         },
       );
 
       console.log("Save response:", response.data);
-      alert("OT/Bonus data saved successfully!");
+      toast.success("OT/Bonus data saved successfully!");
     } catch (err) {
       console.error("Error saving OT/Bonus data:", err);
-      alert("Failed to save OT/Bonus data. Please try again.");
+      handleError(err, "Failed to save OT/Bonus data.");
     } finally {
       setIsSaving(false);
     }
@@ -331,6 +334,7 @@ const Filters = ({
   months,
   isAdmin,
 }) => {
+  const { handleError } = useErrorHandler();
   const [departments, setDepartments] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -338,7 +342,7 @@ const Filters = ({
     const fetchDepartments = async () => {
       setIsLoading(true);
       try {
-        const response = await axios.get('https://tcs.trafficcounting.com/nodejs/api/get-deptname');
+        const response = await axios.get('https://dev.trafficcounting.in/nodejs/api/get-deptname');
         const data = response.data;
         // Transform to match old structure: add "All" and format as { label, value }
         const transformed = [
@@ -348,12 +352,13 @@ const Filters = ({
         setDepartments(transformed);
       } catch (error) {
         console.error('Error fetching departments:', error);
+        handleError(error, "Failed to load departments.");
       } finally {
         setIsLoading(false);
       }
     };
     fetchDepartments();
-  }, []);
+  }, [handleError]);
 
   return (
     <div className="flex items-center gap-4 p-2">

@@ -10,18 +10,19 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import clsx from "clsx";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 
 // Local Imports
 import { Table, Card, THead, TBody, Th, Tr, Td } from "components/ui";
 import { TableSortIcon } from "components/shared/table/TableSortIcon";
 import { Page } from "components/shared/Page";
-import { useLockScrollbar, useDidUpdate, useLocalStorage } from "hooks";
+import { useLockScrollbar, useDidUpdate, useLocalStorage, useErrorHandler } from "hooks";
 import { fuzzyFilter } from "utils/react-table/fuzzyFilter";
 import { Toolbar } from "./Toolbar";
 import { columns } from "./columns";
 import { PaginationSection } from "components/shared/table/PaginationSection";
+import { toast } from "sonner";
 
 export default function EmployeesDatatable() {
   const [originalEmployees, setOriginalEmployees] = useState([]);
@@ -29,6 +30,7 @@ export default function EmployeesDatatable() {
   const [updatedEmployees, setUpdatedEmployees] = useState([]);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState(null);
+  const { handleError } = useErrorHandler();
   const [tableSettings, setTableSettings] = useState({
     enableFullScreen: false,
     enableRowDense: false,
@@ -73,13 +75,9 @@ export default function EmployeesDatatable() {
     );
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
-      const res = await axios.get("https://tcs.trafficcounting.com/nodejs/api/get-salary", { params: { pKey: sessionStorage.getItem("Key") || "" } });
+      const res = await axios.get("https://dev.trafficcounting.in/nodejs/api/get-salary", { params: { pKey: sessionStorage.getItem("Key") || "" } });
       const data = res.data.map((staff) => ({
         StaffId: staff.SId,
         SalId: staff.SalId || staff.SId, // Use provided SalId or fallback to SId
@@ -99,8 +97,13 @@ export default function EmployeesDatatable() {
       setOriginalEmployees(data);
     } catch (err) {
       console.error("Error fetching salary data:", err);
+      handleError(err, "Failed to load salary data.");
     }
-  };  
+  }, [handleError]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -125,11 +128,12 @@ export default function EmployeesDatatable() {
         }))
       };
   
-      const response = await axios.put("https://tcs.trafficcounting.com/nodejs/api/update-salaries", payload);
+      const response = await axios.put("https://dev.trafficcounting.in/nodejs/api/update-salaries", payload);
   
       if (response.data.success) {
+        toast.success("Salaries updated successfully!");
         // Refresh data after a successful update
-        const refreshed = await axios.get("https://tcs.trafficcounting.com/nodejs/api/get-salary", { params: { pKey: sessionStorage.getItem("Key") || "" } });
+        const refreshed = await axios.get("https://dev.trafficcounting.in/nodejs/api/get-salary", { params: { pKey: sessionStorage.getItem("Key") || "" } });
         const data = refreshed.data.map((staff) => ({
           StaffId: staff.SId,
           SalId: staff.SalId || staff.SId, // Again, fallback to SId if SalId is missing
@@ -148,11 +152,14 @@ export default function EmployeesDatatable() {
         setOriginalEmployees(data);
         setEmployees(data);
         setUpdatedEmployees([]);
+        setSaveError(null);
       } else {
         setSaveError(response.data.message || "Failed to update salaries");
+        handleError(new Error(response.data.message), "Failed to update salaries");
       }
     } catch (error) {
       setSaveError(error.message || "Error occurred while updating salaries");
+      handleError(error, "Failed to update salaries.");
     } finally {
       setIsSaving(false);
     }

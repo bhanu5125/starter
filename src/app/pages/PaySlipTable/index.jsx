@@ -9,13 +9,13 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import clsx from "clsx";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 
 import { Table, Card, THead, TBody, Th, Tr, Td } from "components/ui";
 import { TableSortIcon } from "components/shared/table/TableSortIcon";
 import { Page } from "components/shared/Page";
-import { useLockScrollbar, useDidUpdate, useLocalStorage } from "hooks";
+import { useLockScrollbar, useDidUpdate, useLocalStorage, useErrorHandler } from "hooks";
 import { fuzzyFilter } from "utils/react-table/fuzzyFilter";
 import { Toolbar } from "./Toolbar";
 import { columns } from "./columns";
@@ -23,23 +23,25 @@ import { PaginationSection } from "components/shared/table/PaginationSection";
 
 export default function EmployeesDatatable() {
   const [employees, setEmployees] = useState([]);
+  const { handleError } = useErrorHandler();
 
-  const fetchEmployees = async (deptId = 0, year = new Date().getFullYear(), month = (new Date().getMonth() + 1), pPEVal = 2) => {
+  const fetchEmployees = useCallback(async (deptId = 0, year = new Date().getFullYear(), month = (new Date().getMonth() + 1), pPEVal = 2) => {
     try {
-      const response = await axios.get("https://tcs.trafficcounting.com/nodejs/api/get-report", {
+      const response = await axios.get("https://dev.trafficcounting.in/nodejs/api/get-report", {
        params: { pKey: sessionStorage.getItem("Key") || "", deptId, year, month, pPEVal }
       });
       console.log("Response data:", response); // Log the response data
       setEmployees(response.data);
     } catch (err) {
       console.error(err);
+      handleError(err, "Failed to load pay slip data.");
     }
-  };
+  }, [handleError]);
 
   // Initial fetch
   useEffect(() => {
     fetchEmployees();
-  }, []);
+  }, [fetchEmployees]);
 
   const [tableSettings, setTableSettings] = useState({
     enableFullScreen: false,

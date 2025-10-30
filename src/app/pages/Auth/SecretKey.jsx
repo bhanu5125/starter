@@ -6,10 +6,12 @@ import { Button, Card, Input } from "components/ui";
 import { LockClosedIcon } from "@heroicons/react/24/outline";
 import { useForm } from "react-hook-form";
 import { Page } from "components/shared/Page";
+import { useErrorHandler } from "hooks";
 
 export default function SecretKey() {
   const { user, verifySecretKey, errorMessage } = useAuthContext();
   const navigate = useNavigate();
+  const { handleError } = useErrorHandler();
   const { register, handleSubmit } = useForm();
 
   useEffect(() => {
@@ -19,9 +21,13 @@ export default function SecretKey() {
   }, [user, navigate]);
 
   const onSubmit = async (data) => {
-    const verified = await verifySecretKey(data.secretKey);
-    if (verified) {
-      navigate("/dashboards/home");
+    try {
+      const verified = await verifySecretKey(data.secretKey);
+      if (verified) {
+        navigate("/dashboards/home");
+      }
+    } catch (error) {
+      handleError(error, "Secret key verification failed.");
     }
   };
 

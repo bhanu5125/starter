@@ -10,13 +10,13 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import clsx from "clsx";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 
 import { Table, Card, THead, TBody, Th, Tr, Td } from "components/ui";
 import { TableSortIcon } from "components/shared/table/TableSortIcon";
 import { Page } from "components/shared/Page";
-import { useLockScrollbar, useDidUpdate, useLocalStorage } from "hooks";
+import { useLockScrollbar, useDidUpdate, useLocalStorage, useErrorHandler } from "hooks";
 import { fuzzyFilter } from "utils/react-table/fuzzyFilter";
 import Toolbar from "./Toolbar";
 import { columns } from "./columns";
@@ -28,6 +28,7 @@ export default function EmployeesDatatable() {
   const [employees, setEmployees] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [tableRefreshKey, setTableRefreshKey] = useState(0);
+  const { handleError } = useErrorHandler();
 
   // Get today's date components
   const today = new Date().toISOString().slice(0, 10);
@@ -35,10 +36,10 @@ export default function EmployeesDatatable() {
   const month = today.slice(5, 7);
   const currentDay = today.slice(8, 10);
 
-  const fetchAttendanceData = async (year, month, deptId) => {
+  const fetchAttendanceData = useCallback(async (year, month, deptId) => {
     setIsLoading(true);
     try {
-      const resp = await axios.get("https://tcs.trafficcounting.com/nodejs/api/ot-bonus", {
+      const resp = await axios.get("https://dev.trafficcounting.in/nodejs/api/ot-bonus", {
         params: { year, month, deptId },
       });
   
@@ -63,14 +64,15 @@ export default function EmployeesDatatable() {
       
     } catch (err) {
       console.error("Error fetching attendance data:", err);
-      // Optionally show error to user
+      handleError(err, "Failed to load bonus and overtime data.");
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [handleError]);
+
   useEffect(() => {
     fetchAttendanceData(today);
-  }, [today]);
+  }, [today, fetchAttendanceData]);
 
   const [tableSettings, setTableSettings] = useState({
     enableFullScreen: false,

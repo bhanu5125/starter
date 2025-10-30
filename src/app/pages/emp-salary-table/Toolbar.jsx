@@ -9,6 +9,7 @@ import { Listbox } from "components/shared/form/Listbox";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useErrorHandler } from "hooks";
 
 export function Toolbar({ 
   table, 
@@ -23,6 +24,7 @@ export function Toolbar({
   const { isXs } = useBreakpointsContext();
   const isFullScreenEnabled = table?.getState()?.tableSettings?.enableFullScreen || false;
   const navigate = useNavigate();
+  const { handleError } = useErrorHandler();
   
   const [selectedDepartment, setSelectedDepartment] = useState("All");
   const [departments, setDepartments] = useState([]);
@@ -32,7 +34,7 @@ export function Toolbar({
     const fetchDepartments = async () => {
       setIsLoading(true);
       try {
-        const response = await axios.get('https://tcs.trafficcounting.com/nodejs/api/get-deptname');
+        const response = await axios.get('https://dev.trafficcounting.in/nodejs/api/get-deptname');
         const data = response.data;
         // Transform to match old structure: add "All" and format as { label, value }
         const transformed = [
@@ -42,12 +44,13 @@ export function Toolbar({
         setDepartments(transformed);
       } catch (error) {
         console.error('Error fetching departments:', error);
+        handleError(error, "Failed to load departments.");
       } finally {
         setIsLoading(false);
       }
     };
     fetchDepartments();
-  }, []);
+  }, [handleError]);
 
     // Sync Listbox display to 'All' when reset (when originalEmployees changes after reset)
     // This ensures the Listbox always shows the correct value after a reset/save

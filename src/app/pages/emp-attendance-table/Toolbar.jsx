@@ -10,6 +10,8 @@ import { Listbox } from "components/shared/form/Listbox";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router";
+import { useErrorHandler } from "hooks";
+import { toast } from "sonner";
 
 
 // Month names with correct values matching backend expectation (01-12)
@@ -42,6 +44,7 @@ export function Toolbar({
   const { isXs } = useBreakpointsContext();
   const isFullScreenEnabled = table.getState().tableSettings.enableFullScreen;
   const navigate = useNavigate();
+  const { handleError } = useErrorHandler();
 
   // Check admin status.
   const isAdmin = sessionStorage.getItem("isSecretKeyVerified") === "true";
@@ -331,7 +334,7 @@ export function Toolbar({
 
       // Save attendance records
       const response = await axios.post(
-        "https://tcs.trafficcounting.com/nodejs/api/attendance",
+        "https://dev.trafficcounting.in/nodejs/api/attendance",
         {
           records,
         },
@@ -366,7 +369,7 @@ export function Toolbar({
       }
     } catch (err) {
       console.error("Error saving attendance data:", err);
-      alert("Failed to save attendance data. Please try again.");
+      handleError(err, "Failed to save attendance data.");
     } finally {
       setIsSaving(false);
     }
@@ -561,6 +564,7 @@ const Filters = ({
   isOT,
   handleOTChange,
 }) => {
+  const { handleError } = useErrorHandler();
   const [departments, setDepartments] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -568,7 +572,7 @@ const Filters = ({
     const fetchDepartments = async () => {
       setIsLoading(true);
       try {
-        const response = await axios.get('https://tcs.trafficcounting.com/nodejs/api/get-deptname');
+        const response = await axios.get('https://dev.trafficcounting.in/nodejs/api/get-deptname');
         const data = response.data;
         // Transform to match old structure: add "All" and format as { label, value }
         const transformed = [
@@ -578,12 +582,13 @@ const Filters = ({
         setDepartments(transformed);
       } catch (error) {
         console.error('Error fetching departments:', error);
+        handleError(error, "Failed to load departments.");
       } finally {
         setIsLoading(false);
       }
     };
     fetchDepartments();
-  }, []);
+  }, [handleError]);
 
   return (
     <div className="flex items-center gap-4 p-2">

@@ -3,17 +3,19 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import { PersonalInfo } from "./PersonalInfo";
+import { useErrorHandler } from "hooks";
 
 export default function EmpView() {
   const { code } = useParams();
   const [employeeData, setEmployeeData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { handleError } = useErrorHandler();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const { data } = await axios.get(
-          `https://tcs.trafficcounting.com/nodejs/api/get-staff/${code}`
+          `https://dev.trafficcounting.in/nodejs/api/get-staff/${code}`
         );
         console.log("Fetched Data:", data);
         if (data) {
@@ -64,12 +66,13 @@ export default function EmpView() {
         }
       } catch (err) {
         console.error(err);
+        handleError(err, "Failed to load staff data.");
       } finally {
         setLoading(false);
       }
     };
     fetchData();
-  }, [code]);
+  }, [code, handleError]);
 
   if (loading) return <div>Loading...</div>;
   if (!employeeData) return <div>Employee not found</div>;

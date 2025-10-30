@@ -4,31 +4,37 @@ import { Button } from "components/ui";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Page } from "components/shared/Page";
+import { useErrorHandler } from "hooks";
 
 const cols = ["S.No", "User Name", "Edit"];
 
 export default function UserTable() {
   const [users, setUsers] = useState([]);
   const navigate = useNavigate();
+  const { handleError } = useErrorHandler();
 
   useEffect(() => {
-    axios.get("https://tcs.trafficcounting.com/nodejs/api/get-users")
+    axios.get("https://dev.trafficcounting.in/nodejs/api/get-users")
       .then((response) => {
         setUsers(response.data);
         console.log(response.data); // Log the response data directly
       })
-      .catch((error) => console.error("Error fetching users:", error));
-  }, []);
+      .catch((error) => {
+        console.error("Error fetching users:", error);
+        handleError(error, "Failed to load users.");
+      });
+  }, [handleError]);
 
   const handleEditClick = async (UserId, username) => {
     try {
       console.log("Sending UserId:", UserId); // Debug log
-      const response = await axios.post("https://tcs.trafficcounting.com/nodejs/api/generate-token", { UserId });
+      const response = await axios.post("https://dev.trafficcounting.in/nodejs/api/generate-token", { UserId });
       console.log("Token received:", response.data.token); // Debug log
       const { token } = response.data;
       navigate(`/forms/user-form/${UserId}`, { state: { token, username } });
     } catch (error) {
       console.error("Error generating token:", error);
+      handleError(error, "Failed to generate access token.");
     }
   };
 

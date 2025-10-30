@@ -27,6 +27,7 @@ import { Listbox } from "components/shared/form/Listbox";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { useErrorHandler } from "hooks";
 
 // ----------------------------------------------------------------------
 
@@ -40,6 +41,7 @@ export function Toolbar({
   const { isXs } = useBreakpointsContext();
   const isFullScreenEnabled = table.getState().tableSettings.enableFullScreen;
   const navigate = useNavigate();
+  const { handleError } = useErrorHandler();
 
   return (
     <div className="table-toolbar">
@@ -161,6 +163,7 @@ const Filters = ({
   originalEmployees = [],
   onDepartmentChange = () => {},
 }) => {
+  const { handleError } = useErrorHandler();
   const [selectedDepartment, setSelectedDepartment] = useState("All");
   const [selectedStatus, setSelectedStatus] = useState("Active");
   const [selectedStaffType, setSelectedStaffType] = useState("All");
@@ -172,7 +175,7 @@ const Filters = ({
     const fetchDepartments = async () => {
       setIsLoading(true);
       try {
-        const response = await axios.get('https://tcs.trafficcounting.com/nodejs/api/get-deptname');
+        const response = await axios.get('https://dev.trafficcounting.in/nodejs/api/get-deptname');
         const data = response.data;
         // Transform to match old structure: add "All" and format as { label, value }
         const transformed = [
@@ -182,12 +185,13 @@ const Filters = ({
         setDepartmentOptions(transformed);
       } catch (error) {
         console.error('Error fetching departments:', error);
+        handleError(error, "Failed to load departments.");
       } finally {
         setIsLoading(false);
       }
     };
     fetchDepartments();
-  }, []);
+  }, [handleError]);
 
   // Staff type options
   const staffTypeOptions = [

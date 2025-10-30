@@ -10,6 +10,7 @@ import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+import { useErrorHandler } from "hooks";
 
 const monthNames = [
   { label: "January", value: 1 },
@@ -30,6 +31,7 @@ export function Toolbar({ table, setEmployees, fetchEmployees, selectedOptionalC
   const { isXs } = useBreakpointsContext();
   const isFullScreenEnabled = table.getState().tableSettings.enableFullScreen;
   const navigate = useNavigate();
+  const { handleError } = useErrorHandler();
 
   const currentDate = new Date();
   const currentYear = currentDate.getFullYear();
@@ -46,7 +48,7 @@ export function Toolbar({ table, setEmployees, fetchEmployees, selectedOptionalC
     const fetchDepartments = async () => {
       setIsLoading(true);
       try {
-        const response = await axios.get('https://tcs.trafficcounting.com/nodejs/api/get-deptname');
+        const response = await axios.get('https://dev.trafficcounting.in/nodejs/api/get-deptname');
         const data = response.data;
         // Transform to match old structure: add "All" and format as { label, value }
         const transformed = [
@@ -56,12 +58,13 @@ export function Toolbar({ table, setEmployees, fetchEmployees, selectedOptionalC
         setDepartments(transformed);
       } catch (error) {
         console.error('Error fetching departments:', error);
+        handleError(error, "Failed to load departments.");
       } finally {
         setIsLoading(false);
       }
     };
     fetchDepartments();
-  }, []);
+  }, [handleError]);
 
   const years = Array.from({ length: 31 }, (_, i) => ({
     label: (2018 + i).toString(),
@@ -111,7 +114,7 @@ export function Toolbar({ table, setEmployees, fetchEmployees, selectedOptionalC
   
     try {
       const response = await axios.get(
-        `https://tcs.trafficcounting.com/nodejs/api/export-${reportType}?${params.toString()}`,
+        `https://dev.trafficcounting.in/nodejs/api/export-${reportType}?${params.toString()}`,
         {
           responseType: "blob", // Important for binary responses
         }
@@ -145,7 +148,7 @@ export function Toolbar({ table, setEmployees, fetchEmployees, selectedOptionalC
       document.body.removeChild(a);
     } catch (error) {
       console.error("Export error:", error);
-      // Consider adding user-friendly error notification here
+      handleError(error, "Failed to export data.");
     }
   };
   

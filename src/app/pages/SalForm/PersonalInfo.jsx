@@ -4,6 +4,8 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { Input, Button } from "components/ui";
 import { salaryCalcSchema } from "./schema";
 import axios from "axios";
+import { useErrorHandler } from "hooks";
+import { toast } from "sonner";
 
 export function PersonalInfo({ defaultValues, onSuccess }) {
   const {
@@ -15,6 +17,7 @@ export function PersonalInfo({ defaultValues, onSuccess }) {
     resolver: yupResolver(salaryCalcSchema),
     defaultValues,
   });
+  const { handleError } = useErrorHandler();
 
   useEffect(() => {
     reset(defaultValues);
@@ -23,15 +26,17 @@ export function PersonalInfo({ defaultValues, onSuccess }) {
   const onSubmit = async (data) => {
     try {
       const response = await axios.put(
-        "https://tcs.trafficcounting.com/nodejs/api/update-salary-calc/",
+        "https://dev.trafficcounting.in/nodejs/api/update-salary-calc/",
         data
       );
 
       if (response.status === 200) {
+        toast.success("Salary calculation updated successfully!");
         onSuccess?.();
       }
     } catch (error) {
       console.error("Form submission error:", error);
+      handleError(error, "Failed to update salary calculation.");
     }
   };
 

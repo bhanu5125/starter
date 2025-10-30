@@ -4,6 +4,8 @@ import { Input, Button } from "components/ui";
 import * as yup from "yup";
 import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useErrorHandler } from "hooks";
+import { toast } from "sonner";
 
 // Validation schema for password change
 const passwordChangeSchema = yup.object().shape({
@@ -21,7 +23,8 @@ function UserForm() {
   const location = useLocation();
   const navigate = useNavigate();
   const token = location.state?.token;
-  const username = location.state?.username; 
+  const username = location.state?.username;
+  const { handleError } = useErrorHandler(); 
 
   const {
     register,
@@ -34,7 +37,7 @@ function UserForm() {
   const onSubmit = async (data) => {
     try {
       const response = await axios.post(
-        "https://tcs.trafficcounting.com/nodejs/api/update-password",
+        "https://dev.trafficcounting.in/nodejs/api/update-password",
         { password: data.password },
         {
           headers: {
@@ -44,16 +47,12 @@ function UserForm() {
       );
   
       if (response.status === 200) {
-        alert("Password updated successfully!");
+        toast.success("Password updated successfully!");
         navigate("/dashboards/administration");
       }
     } catch (error) {
       console.error("Error updating password:", error);
-      if (error.response) {
-        alert(error.response.data.error || "Failed to update password");
-      } else {
-        alert("Network error. Please try again.");
-      }
+      handleError(error, "Failed to update password.");
     }
   };
 

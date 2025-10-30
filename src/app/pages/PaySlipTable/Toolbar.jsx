@@ -9,6 +9,7 @@ import { Listbox } from "components/shared/form/Listbox";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useErrorHandler } from "hooks";
 
 const monthNames = [
   { label: "January", value: 1 },
@@ -29,6 +30,7 @@ export function Toolbar({ table, setEmployees, fetchEmployees }) {
   const { isXs } = useBreakpointsContext();
   const isFullScreenEnabled = table.getState().tableSettings.enableFullScreen;
   const navigate = useNavigate();
+  const { handleError } = useErrorHandler();
 
   const currentDate = new Date();
   const currentYear = currentDate.getFullYear();
@@ -49,7 +51,7 @@ export function Toolbar({ table, setEmployees, fetchEmployees }) {
     const fetchDepartments = async () => {
       setIsLoading(true);
       try {
-        const response = await axios.get('https://tcs.trafficcounting.com/nodejs/api/get-deptname');
+        const response = await axios.get('https://dev.trafficcounting.in/nodejs/api/get-deptname');
         const data = response.data;
         // Transform to match structure: add "All" and format as { label, value }
         const transformed = [
@@ -59,12 +61,13 @@ export function Toolbar({ table, setEmployees, fetchEmployees }) {
         setDepartments(transformed);
       } catch (error) {
         console.error('Error fetching departments:', error);
+        handleError(error, "Failed to load departments.");
       } finally {
         setIsLoading(false);
       }
     };
     fetchDepartments();
-  }, []);
+  }, [handleError]);
 
   const handleDepartmentChange = (selectedOption) => {
     const value = selectedOption?.value || 0;

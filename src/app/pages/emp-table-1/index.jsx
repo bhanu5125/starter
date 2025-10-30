@@ -16,7 +16,7 @@ import axios from "axios";
 import { Table, Card, THead, TBody, Th, Tr, Td } from "components/ui";
 import { TableSortIcon } from "components/shared/table/TableSortIcon";
 import { Page } from "components/shared/Page";
-import { useLockScrollbar, useDidUpdate, useLocalStorage } from "hooks";
+import { useLockScrollbar, useDidUpdate, useLocalStorage, useErrorHandler } from "hooks";
 import { fuzzyFilter } from "utils/react-table/fuzzyFilter";
 import { Toolbar } from "./Toolbar";
 import { columns } from "./columns";
@@ -26,12 +26,12 @@ export default function EmployeesDatatable() {
   const [originalEmployees, setOriginalEmployees] = useState([]); // Store the original data
   const [employees, setEmployees] = useState([]); // Store the filtered data
   const [selectedDepartment, setSelectedDepartment] = useState("All"); // Track selected department for columns
-  //const [error, setError] = useState(null);
+  const { handleError } = useErrorHandler();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get("https://tcs.trafficcounting.com/nodejs/api/getstaff");
+        const response = await axios.get("https://dev.trafficcounting.in/nodejs/api/getstaff");
         const data = response.data.map((staff) => ({
           employee_id: staff.SId,
           code: staff.Code,
@@ -60,11 +60,12 @@ export default function EmployeesDatatable() {
         setEmployees(sortedData);
       } catch (err) {
         console.error(err);
+        handleError(err, "Failed to load staff data.");
       }
     };
   
     fetchData();
-  }, []);
+  }, [handleError]);
   
 
   const [tableSettings, setTableSettings] = useState({
