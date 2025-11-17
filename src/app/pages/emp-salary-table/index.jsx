@@ -95,6 +95,7 @@ export default function EmployeesDatatable() {
       }));
       setEmployees(data);
       setOriginalEmployees(data);
+      console.log("Fetched salary data:", data);
     } catch (err) {
       console.error("Error fetching salary data:", err);
       handleError(err, "Failed to load salary data.");
@@ -121,7 +122,7 @@ export default function EmployeesDatatable() {
         pKey: sessionStorage.getItem("Key") || "",
         employees: employees.map(emp => ({
           SalId: emp.SalId,            // Ensure SalId is included
-          StaffId: emp.SId,          // Ensure StaffId is included
+          StaffId: emp.StaffId,        // Fixed: Changed from emp.SId to emp.StaffId
           Salary: emp.Salary,
           Pf_ESIon: emp.Pfon || 0,
           TDS: emp.TDS || 0,
@@ -200,6 +201,7 @@ export default function EmployeesDatatable() {
     },
     enableSorting: tableSettings.enableSorting,
     enableColumnFilters: tableSettings.enableColumnFilters,
+    autoResetPageIndex: false, // Prevent page reset when data changes
     getCoreRowModel: getCoreRowModel(),
     onGlobalFilterChange: setGlobalFilter,
     getFilteredRowModel: getFilteredRowModel(),

@@ -13,10 +13,15 @@ export function TextCell({ getValue }) {
 }
 
 export function SalaryInputCell({ getValue, row, column, table }) {
-  const value = getValue() || 0;
+  const initialValue = getValue() || 0;
+  const [value, setValue] = useState(initialValue);
 
   const handleChange = (e) => {
-    const newValue = parseFloat(e.target.value) || 0;
+    setValue(e.target.value);
+  };
+
+  const handleBlur = () => {
+    const newValue = parseFloat(value) || 0;
     table.options.meta.updateData(row.index, column.id, newValue);
   };
 
@@ -25,6 +30,7 @@ export function SalaryInputCell({ getValue, row, column, table }) {
       size="6" 
       value={value} 
       onChange={handleChange}
+      onBlur={handleBlur}
       type="number"
       min="0"
       className="w-24"
@@ -51,10 +57,15 @@ export function PfEsiInputCell({ getValue, row, column, table }) {
 }
 
 export function TdsInputCell({ getValue, row, column, table }) {
-  const value = getValue() || 0;
+  const initialValue = getValue() || 0;
+  const [value, setValue] = useState(initialValue);
 
   const handleChange = (e) => {
-    const newValue = e.target.value;
+    setValue(e.target.value);
+  };
+
+  const handleBlur = () => {
+    const newValue = parseFloat(value) || 0;
     table.options.meta.updateData(row.index, column.id, newValue);
   };
 
@@ -63,6 +74,7 @@ export function TdsInputCell({ getValue, row, column, table }) {
       size="6" 
       value={value} 
       onChange={handleChange}
+      onBlur={handleBlur}
       type="number"
       className="w-20"
     />
