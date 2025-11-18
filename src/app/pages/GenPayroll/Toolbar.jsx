@@ -106,6 +106,7 @@ export function Toolbar({ table, setEmployees, fetchEmployees, selectedOptionalC
 
   const handleExport = async (reportType) => {
     const params = new URLSearchParams({
+      pKey: sessionStorage.getItem("Key"),
       deptId: selectedDepartment,
       year: selectedYear,
       month: selectedMonth,
