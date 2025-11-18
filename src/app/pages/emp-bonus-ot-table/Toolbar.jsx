@@ -70,6 +70,8 @@ export function Toolbar({
   const handleYearChange = (selectedOption) => {
     if (isAdmin && selectedOption) {
       setSelectedYear(selectedOption.value);
+      // Reset pagination when year changes
+      table.setPageIndex(0);
       fetchAttendanceData(selectedOption.value, selectedMonth, selectedDepartment || "");
     }
   };
@@ -77,6 +79,8 @@ export function Toolbar({
   const handleMonthChange = (selectedOption) => {
     if (isAdmin && selectedOption) {
       setSelectedMonth(selectedOption.value);
+      // Reset pagination when month changes
+      table.setPageIndex(0);
       fetchAttendanceData(selectedYear, selectedOption.value, selectedDepartment || "");
     }
   };
@@ -112,6 +116,8 @@ export function Toolbar({
   const handleDepartmentChange = (selectedOption) => {
     const value = selectedOption?.value || "";
     setSelectedDepartment(value);
+    // Reset pagination when department changes
+    table.setPageIndex(0);
     fetchAttendanceData(selectedYear, selectedMonth, value);
   };
 

@@ -65,6 +65,8 @@ export function Toolbar({
   const handleDepartmentChange = (selectedOption) => {
     const value = selectedOption?.value || "All";
     setSelectedDepartment(value);
+    // Reset pagination when department changes
+    table.setPageIndex(0);
     const filteredEmployees = originalEmployees.filter((employee) => {
       return value === "All" || employee.department_name === value;
     });
