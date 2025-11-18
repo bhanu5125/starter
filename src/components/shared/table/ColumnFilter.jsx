@@ -19,6 +19,15 @@ import { DatePicker } from "../form/Datepicker";
 
 export function ColumnFilter({ column }) {
   const columnFilterValue = column?.getFilterValue();
+  const handleWheel = (e) => {
+    e.currentTarget.blur();
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+      e.preventDefault();
+    }
+  };
 
   if (column.columnDef.filter === "dateRange") {
     return (
@@ -72,8 +81,10 @@ export function ColumnFilter({ column }) {
           classNames={{
             root: "mt-0.5",
             input:
-              "min-w-[4rem] rounded-none border-0 border-b px-0 pb-1.5 text-xs+",
+              "min-w-[4rem] rounded-none border-0 border-b px-0 pb-1.5 text-xs+ hide-number-arrow",
           }}
+          onWheel={handleWheel}
+          onKeyDown={handleKeyDown}
         />
         <Input
           type="number"
@@ -85,8 +96,10 @@ export function ColumnFilter({ column }) {
           classNames={{
             root: "mt-0.5",
             input:
-              "min-w-[4rem] rounded-none border-0 border-b px-0 pb-1.5 text-xs+",
+              "min-w-[4rem] rounded-none border-0 border-b px-0 pb-1.5 text-xs+ hide-number-arrow",
           }}
+          onWheel={handleWheel}
+          onKeyDown={handleKeyDown}
         />
       </div>
     );

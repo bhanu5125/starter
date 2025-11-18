@@ -50,14 +50,26 @@ export function InputCell({ getValue, row, column, table }) {
     table.options.meta.updateData(row.index, column.id, newValue);
   };
 
+  const handleWheel = (e) => {
+    e.currentTarget.blur();
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+      e.preventDefault();
+    }
+  };
+
   return (
     <Input 
       size="6" 
       value={value} 
       onChange={handleChange}
+      onWheel={handleWheel}
+      onKeyDown={handleKeyDown}
       type="number"
       min="0"
-      className="w-24"
+      className="w-24 hide-number-arrow"
     />
   );
 }

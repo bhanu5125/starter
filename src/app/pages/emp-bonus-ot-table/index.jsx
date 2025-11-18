@@ -71,8 +71,8 @@ export default function EmployeesDatatable() {
   }, [handleError]);
 
   useEffect(() => {
-    fetchAttendanceData(today);
-  }, [today, fetchAttendanceData]);
+    fetchAttendanceData(year, month);
+  }, [year, month, fetchAttendanceData]);
 
   const [tableSettings, setTableSettings] = useState({
     enableFullScreen: false,

@@ -48,51 +48,67 @@ export default function EmployeesDatatable() {
     {}
   );
 
-  // Handle cell edits
-  const handleCellEdit = (rowIndex, columnId, value) => {
-    const updatedEmployee = employees[rowIndex];
-    
-    setUpdatedEmployees(prev => {
-      const existing = prev.find(e => e.StaffId === updatedEmployee.StaffId);
-      
-      if (existing) {
-        return prev.map(e => 
-          e.StaffId === updatedEmployee.StaffId 
-            ? { ...e, [columnId]: value, isModified: true }
-            : e
-        );
-      }
-      return [...prev, { ...updatedEmployee, [columnId]: value, isModified: true }];
-    });
+  const transformSalaryData = useCallback((rows = []) => {
+    return rows.map((staff, index) => {
+      const staffId =
+        staff?.StaffId ??
+        null;
 
-    setEmployees(prev =>
-      prev.map((row, index) => {
-        if (index === rowIndex) {
-          return { ...row, [columnId]: value };
-        }
-        return row;
-      })
-    );
+      const salId =
+        staff?.SalId ??
+        staffId ??
+        index;
+
+      const rowKeyBase = salId ?? staffId ?? staff?.Code ?? `row-${index}`;
+      const rowKeySuffix = [staff?.Year, staff?.Month].filter(Boolean).join("-");
+      const rowKey = String(
+        rowKeySuffix ? `${rowKeyBase}-${rowKeySuffix}` : `${rowKeyBase}-${index}`
+      );
+
+      return {
+        rowKey,
+        StaffId: staffId ?? salId ?? index,
+        SalId: salId,
+        code: staff?.Code,
+        firstname: staff?.FirstName,
+        surname: staff?.LastName,
+        department_name: staff?.Deptname,
+        Salary: staff?.Salary ?? 0,
+        Pfon: staff?.Pf_ESIon?.data?.[0] ?? 0,
+        TDS: staff?.TDS ?? 0,
+        Year: staff?.Year,
+        Month: staff?.Month,
+        ABRY_Flag: staff?.ABRY_Flag ?? 0,
+        isModified: false,
+      };
+    });
+  }, []);
+
+  // Handle cell edits
+  const handleCellEdit = (rowKey, columnId, value) => {
+    const normalizedKey = rowKey != null ? String(rowKey) : null;
+    const matchesRow = (row) => {
+      if (!normalizedKey) {
+        return false;
+      }
+      const candidates = [row?.rowKey, row?.SalId, row?.StaffId].filter(
+        (candidate) => candidate !== undefined && candidate !== null
+      );
+      return candidates.some((candidate) => String(candidate) === normalizedKey);
+    };
+
+    const updateRows = (rows) =>
+      rows.map((row) => (matchesRow(row) ? { ...row, [columnId]: value } : row));
+
+    setEmployees((prev) => updateRows(prev));
+    setOriginalEmployees((prev) => updateRows(prev));
   };
 
   const fetchData = useCallback(async () => {
     try {
       const res = await axios.get("https://tcs.trafficcounting.com/nodejs/api/get-salary", { params: { pKey: sessionStorage.getItem("Key") || "" } });
-      const data = res.data.map((staff) => ({
-        StaffId: staff.SId,
-        SalId: staff.SalId || staff.SId, // Use provided SalId or fallback to SId
-        code: staff.Code,
-        firstname: staff.FirstName,
-        surname: staff.LastName,
-        department_name: staff.Deptname,
-        Salary: staff.Salary || 0,
-        Pfon: staff.Pf_ESIon?.data?.[0] || 0,
-        TDS: staff.TDS,
-        Year: staff.Year,
-        Month: staff.Month,
-        ABRY_Flag: staff.ABRY_Flag || 0,
-        isModified: false
-      }));
+      console.log("Raw salary data response:", res.data);
+      const data = transformSalaryData(res.data);
       setEmployees(data);
       setOriginalEmployees(data);
       console.log("Fetched salary data:", data);
@@ -100,7 +116,7 @@ export default function EmployeesDatatable() {
       console.error("Error fetching salary data:", err);
       handleError(err, "Failed to load salary data.");
     }
-  }, [handleError]);
+  }, [handleError, transformSalaryData]);
 
   useEffect(() => {
     fetchData();
@@ -120,7 +136,7 @@ export default function EmployeesDatatable() {
   
       const payload = {
         pKey: sessionStorage.getItem("Key") || "",
-        employees: employees.map(emp => ({
+        employees: originalEmployees.map(emp => ({
           SalId: emp.SalId,            // Ensure SalId is included
           StaffId: emp.StaffId,        // Fixed: Changed from emp.SId to emp.StaffId
           Salary: emp.Salary,
@@ -128,6 +144,9 @@ export default function EmployeesDatatable() {
           TDS: emp.TDS || 0,
         }))
       };
+
+      console.log("Saving salary data - Total employee count:", payload.employees.length);
+      console.log("Saving salary data - Sample (first 2):", payload.employees.slice(0, 2));
   
       const response = await axios.put("https://tcs.trafficcounting.com/nodejs/api/update-salaries", payload);
   
@@ -135,21 +154,7 @@ export default function EmployeesDatatable() {
         toast.success("Salaries updated successfully!");
         // Refresh data after a successful update
         const refreshed = await axios.get("https://tcs.trafficcounting.com/nodejs/api/get-salary", { params: { pKey: sessionStorage.getItem("Key") || "" } });
-        const data = refreshed.data.map((staff) => ({
-          StaffId: staff.SId,
-          SalId: staff.SalId || staff.SId, // Again, fallback to SId if SalId is missing
-          code: staff.Code,
-          firstname: staff.FirstName,
-          surname: staff.LastName,
-          department_name: staff.Deptname,
-          Salary: staff.Salary || 0,
-          Pfon: staff.Pf_ESIon?.data?.[0] || 0,
-          TDS: staff.TDS,
-          Year: staff.Year,
-          Month: staff.Month,
-          ABRY_Flag: staff.ABRY_Flag || 0,
-          isModified: false
-        }));
+        const data = transformSalaryData(refreshed.data);
         setOriginalEmployees(data);
         setEmployees(data);
         setUpdatedEmployees([]);
@@ -178,8 +183,8 @@ export default function EmployeesDatatable() {
       tableSettings,
     },
     meta: {
-      updateData: (rowIndex, columnId, value) => {
-        handleCellEdit(rowIndex, columnId, value);
+      updateData: (rowKey, columnId, value) => {
+        handleCellEdit(rowKey, columnId, value);
       },
       deleteRow: (row) => {
         setEmployees((old) =>

@@ -4,7 +4,7 @@ import PropTypes from "prop-types";
 import { Avatar } from "components/ui";
 import { useLocaleContext } from "app/contexts/locale/context";
 import { Input, Checkbox } from "components/ui";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 // ----------------------------------------------------------------------
 
@@ -15,6 +15,12 @@ export function TextCell({ getValue }) {
 export function SalaryInputCell({ getValue, row, column, table }) {
   const initialValue = getValue() || 0;
   const [value, setValue] = useState(initialValue);
+  const rowKey = row?.original?.rowKey ?? row?.original?.SalId ?? row?.original?.StaffId ?? row?.id;
+
+  // Sync local state when the prop value changes (e.g., when filtering departments)
+  useEffect(() => {
+    setValue(initialValue);
+  }, [initialValue]);
 
   const handleChange = (e) => {
     setValue(e.target.value);
@@ -22,7 +28,19 @@ export function SalaryInputCell({ getValue, row, column, table }) {
 
   const handleBlur = () => {
     const newValue = parseFloat(value) || 0;
-    table.options.meta.updateData(row.index, column.id, newValue);
+    table.options.meta.updateData(rowKey, column.id, newValue);
+  };
+
+  const handleWheel = (e) => {
+    // Blur the element so the mouse wheel doesn't change the numeric value
+    e.currentTarget.blur();
+  };
+
+  const handleKeyDown = (e) => {
+    // Prevent ArrowUp/ArrowDown from changing number values
+    if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+      e.preventDefault();
+    }
   };
 
   return (
@@ -31,18 +49,21 @@ export function SalaryInputCell({ getValue, row, column, table }) {
       value={value} 
       onChange={handleChange}
       onBlur={handleBlur}
+      onWheel={handleWheel}
+      onKeyDown={handleKeyDown}
       type="number"
       min="0"
-      className="w-24"
+      className="w-24 hide-number-arrow"
     />
   );
 }
 
 export function PfEsiInputCell({ getValue, row, column, table }) {
   const value = getValue() === 1;
+  const rowKey = row?.original?.rowKey ?? row?.original?.SalId ?? row?.original?.StaffId ?? row?.id;
 
   const handleChange = () => {
-    table.options.meta.updateData(row.index, column.id, value ? 0 : 1);
+    table.options.meta.updateData(rowKey, column.id, value ? 0 : 1);
   };
 
   return (
@@ -59,6 +80,12 @@ export function PfEsiInputCell({ getValue, row, column, table }) {
 export function TdsInputCell({ getValue, row, column, table }) {
   const initialValue = getValue() || 0;
   const [value, setValue] = useState(initialValue);
+  const rowKey = row?.original?.rowKey ?? row?.original?.SalId ?? row?.original?.StaffId ?? row?.id;
+
+  // Sync local state when the prop value changes (e.g., when filtering departments)
+  useEffect(() => {
+    setValue(initialValue);
+  }, [initialValue]);
 
   const handleChange = (e) => {
     setValue(e.target.value);
@@ -66,7 +93,19 @@ export function TdsInputCell({ getValue, row, column, table }) {
 
   const handleBlur = () => {
     const newValue = parseFloat(value) || 0;
-    table.options.meta.updateData(row.index, column.id, newValue);
+    table.options.meta.updateData(rowKey, column.id, newValue);
+  };
+
+  const handleWheel = (e) => {
+    // Blur the element so the mouse wheel doesn't change the numeric value
+    e.currentTarget.blur();
+  };
+
+  const handleKeyDown = (e) => {
+    // Prevent ArrowUp/ArrowDown from changing number values
+    if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+      e.preventDefault();
+    }
   };
 
   return (
@@ -75,8 +114,10 @@ export function TdsInputCell({ getValue, row, column, table }) {
       value={value} 
       onChange={handleChange}
       onBlur={handleBlur}
+      onWheel={handleWheel}
+      onKeyDown={handleKeyDown}
       type="number"
-      className="w-20"
+      className="w-20 hide-number-arrow"
     />
   );
 }

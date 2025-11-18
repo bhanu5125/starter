@@ -54,6 +54,16 @@ function FilterContent({ column, title, MinPrefixIcon, MaxPrefixIcon }) {
   const [min, max] = column.getFacetedMinMaxValues();
   const minInputRef = useRef();
 
+  const handleWheel = (e) => {
+    e.currentTarget.blur();
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+      e.preventDefault();
+    }
+  };
+
   useEffect(() => minInputRef.current.focus(), []);
 
   return (
@@ -82,10 +92,12 @@ function FilterContent({ column, title, MinPrefixIcon, MaxPrefixIcon }) {
           }
           label="Min"
           placeholder={min}
-          className={clsx(MinPrefixIcon && "ltr:!pl-8 rtl:!pr-8")}
+          className={clsx(MinPrefixIcon && "ltr:!pl-8 rtl:!pr-8", "hide-number-arrow")}
           prefix={
             MinPrefixIcon && <MinPrefixIcon className="stroke-1.5 size-4.5" />
           }
+          onWheel={handleWheel}
+          onKeyDown={handleKeyDown}
         />
         <Input
           type="number"
@@ -95,10 +107,12 @@ function FilterContent({ column, title, MinPrefixIcon, MaxPrefixIcon }) {
           }
           placeholder={max}
           label="Max"
-          className={clsx(MaxPrefixIcon && "ltr:!pl-8 rtl:!pr-8")}
+          className={clsx(MaxPrefixIcon && "ltr:!pl-8 rtl:!pr-8", "hide-number-arrow")}
           prefix={
             MaxPrefixIcon && <MaxPrefixIcon className="stroke-1.5 size-4.5" />
           }
+          onWheel={handleWheel}
+          onKeyDown={handleKeyDown}
         />
       </div>
     </div>
