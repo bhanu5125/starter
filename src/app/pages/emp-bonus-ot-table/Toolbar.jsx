@@ -165,6 +165,7 @@ export function Toolbar({
       const response = await axios.post(
         "https://tcs.trafficcounting.com/nodejs/api/ot-bonus",
         {
+          secretKey: sessionStorage.getItem('Key'),
           records,
         },
       );

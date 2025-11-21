@@ -40,7 +40,7 @@ export default function EmployeesDatatable() {
     setIsLoading(true);
     try {
       const resp = await axios.get("https://tcs.trafficcounting.com/nodejs/api/ot-bonus", {
-        params: { year, month, deptId },
+        params: { secretKey: sessionStorage.getItem('Key'), year, month, deptId },
       });
   
       console.log("OT & Bonus data:", resp.data);
